@@ -153,8 +153,13 @@ nav.scrolled{padding:14px 40px;background:rgba(11,8,5,.72);backdrop-filter:blur(
 .feat p{color:var(--muted);font-size:.86rem}
 
 /* ---- Scent families ---- */
-.scents{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
-.scent{border:1px solid var(--line);border-radius:14px;padding:30px 24px;background:var(--glass);transition:.4s;cursor:default}
+.scent-group{margin-bottom:56px}
+.scent-group:last-child{margin-bottom:0}
+.scent-group-head{display:flex;align-items:baseline;gap:16px;margin-bottom:26px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.sg-label{font-family:var(--serif);font-size:1.6rem;color:var(--gold);letter-spacing:.02em}
+.sg-count{font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-left:auto}
+.scents{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:16px}
+.scent{border:1px solid var(--line);border-radius:14px;padding:26px 22px;background:var(--glass);transition:.4s;cursor:default}
 .scent:hover{border-color:var(--gold);transform:translateY(-5px)}
 .scent .dot{width:34px;height:34px;border-radius:50%;margin-bottom:18px}
 .scent h4{font-family:var(--serif);font-size:1.3rem;font-weight:500;margin-bottom:6px}
@@ -199,7 +204,7 @@ footer{padding:70px 0 40px;border-top:1px solid var(--line);text-align:center}
     backdrop-filter:blur(20px);transform:translateX(100%);transition:.4s;gap:30px}
   .nav-links.open{transform:none}
   .burger{display:flex;z-index:60}
-  .collections,.feat-grid,.scents,.story,.ws-grid{grid-template-columns:1fr}
+  .collections,.feat-grid,.story,.ws-grid{grid-template-columns:1fr}
   .feat-grid{gap:1px}
   .story{gap:40px}
   .ws-grid{gap:44px}
@@ -370,15 +375,41 @@ footer{padding:70px 0 40px;border-top:1px solid var(--line);text-align:center}
 <section id="scents">
   <div class="wrap">
     <div class="head reveal">
-      <div class="eyebrow">Scent Families</div>
+      <div class="eyebrow">The Scent Library</div>
       <h2>Find your <em>aura</em></h2>
-      <p>A curated wardrobe of moods, from warm and resinous to bright and clean.</p>
+      <p>Every scent in the house — fourteen for the car, six for the home. Same craft, two ways to fill a space.</p>
     </div>
-    <div class="scents">
-      <div class="scent reveal"><div class="dot" style="background:linear-gradient(135deg,#c98a3a,#7a4a16)"></div><h4>Amber &amp; Oud</h4><span>Warm · Resinous · Bold</span></div>
-      <div class="scent reveal"><div class="dot" style="background:linear-gradient(135deg,#f0d28a,#c9962f)"></div><h4>Vanilla &amp; Musk</h4><span>Soft · Sweet · Lingering</span></div>
-      <div class="scent reveal"><div class="dot" style="background:linear-gradient(135deg,#bcd9b0,#5e8a52)"></div><h4>Citrus &amp; Green</h4><span>Bright · Fresh · Clean</span></div>
-      <div class="scent reveal"><div class="dot" style="background:linear-gradient(135deg,#9bb6d6,#3f5d80)"></div><h4>Aquatic &amp; Cool</h4><span>Crisp · Airy · Modern</span></div>
+
+    <div class="scent-group reveal">
+      <div class="scent-group-head"><span class="sg-label">For the Car</span><span class="sg-count">14 Scents</span></div>
+      <div class="scents">
+        <div class="scent"><div class="dot" style="background:linear-gradient(135deg,#bfe3f5,#4a86b8)"></div><h4>Cold Water</h4><span>Crisp · Aquatic · Cool</span></div>
+        <div class="scent"><div class="dot" style="background:linear-gradient(135deg,#5a5a66,#15151c)"></div><h4>Black Diamond</h4><span>Dark · Bold · Refined</span></div>
+        <div class="scent"><div class="dot" style="background:linear-gradient(135deg,#d9a36a,#6e3f1c)"></div><h4>Egyptian Musk</h4><span>Warm · Sensual · Musky</span></div>
+        <div class="scent"><div class="dot" style="background:linear-gradient(135deg,#d9b3c4,#8a5c74)"></div><h4>Memories</h4><span>Soft · Powdery · Nostalgic</span></div>
+        <div class="scent"><div class="dot" style="background:linear-gradient(135deg,#eef3f7,#b9c6d4)"></div><h4>Baby Powder</h4><span>Clean · Soft · Tender</span></div>
+        <div class="scent"><div class="dot" style="background:linear-gradient(135deg,#f6dd6b,#d99a1e)"></div><h4>Pineapple</h4><span>Sweet · Tropical · Juicy</span></div>
+        <div class="scent"><div class="dot" style="background:linear-gradient(135deg,#f7a9c9,#e35c95)"></div><h4>Bubble Gum</h4><span>Sweet · Playful · Fruity</span></div>
+        <div class="scent"><div class="dot" style="background:linear-gradient(135deg,#f2c79a,#5d8fb5)"></div><h4>Horizon</h4><span>Airy · Bright · Open</span></div>
+        <div class="scent"><div class="dot" style="background:linear-gradient(135deg,#c9b3e0,#7e5ca8)"></div><h4>Lavender</h4><span>Floral · Calm · Herbal</span></div>
+        <div class="scent"><div class="dot" style="background:linear-gradient(135deg,#c9b79a,#6b5a44)"></div><h4>New Car</h4><span>Leather · Crisp · Clean</span></div>
+        <div class="scent"><div class="dot" style="background:linear-gradient(135deg,#f4e6c4,#c9a868)"></div><h4>Vanilla</h4><span>Sweet · Warm · Creamy</span></div>
+        <div class="scent"><div class="dot" style="background:linear-gradient(135deg,#f6c08a,#e2802f)"></div><h4>Cantaloupe</h4><span>Juicy · Sweet · Fresh</span></div>
+        <div class="scent"><div class="dot" style="background:linear-gradient(135deg,#c79a64,#7a4f24)"></div><h4>Sandalwood</h4><span>Woody · Warm · Smooth</span></div>
+        <div class="scent"><div class="dot" style="background:linear-gradient(135deg,#aee0d2,#3f8f86)"></div><h4>Sea Breeze</h4><span>Marine · Fresh · Cool</span></div>
+      </div>
+    </div>
+
+    <div class="scent-group reveal">
+      <div class="scent-group-head"><span class="sg-label">For the Home</span><span class="sg-count">6 Scents</span></div>
+      <div class="scents">
+        <div class="scent"><div class="dot" style="background:linear-gradient(135deg,#f7cf6a,#e88b2a)"></div><h4>Mango</h4><span>Tropical · Sweet · Juicy</span></div>
+        <div class="scent"><div class="dot" style="background:linear-gradient(135deg,#8fc0e0,#245d86)"></div><h4>Ocean</h4><span>Marine · Cool · Clean</span></div>
+        <div class="scent"><div class="dot" style="background:linear-gradient(135deg,#f2c79a,#5d8fb5)"></div><h4>Horizon</h4><span>Airy · Bright · Open</span></div>
+        <div class="scent"><div class="dot" style="background:linear-gradient(135deg,#f7a9c9,#e35c95)"></div><h4>Bubble Gum</h4><span>Sweet · Playful · Fruity</span></div>
+        <div class="scent"><div class="dot" style="background:linear-gradient(135deg,#d9b3c4,#8a5c74)"></div><h4>Memories</h4><span>Soft · Powdery · Nostalgic</span></div>
+        <div class="scent"><div class="dot" style="background:linear-gradient(135deg,#eaf4fb,#9fc4dd)"></div><h4>Crystal</h4><span>Clean · Crisp · Pure</span></div>
+      </div>
     </div>
   </div>
 </section>
