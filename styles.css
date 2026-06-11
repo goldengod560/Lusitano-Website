@@ -290,13 +290,21 @@ h2 em, .story-line em {
   color: transparent;
 }
 
-/* JS-split letters for the staggered cinematic reveal */
+/* JS-split letters for the staggered cinematic reveal.
+   Each span re-applies the gradient — splitting the parent into
+   inline-block children breaks the parent's text-clip, so each
+   letter needs its own clipped gradient to remain visible. */
 .hero-title .ltr {
   display: inline-block;
   opacity: 0;
   transform: translateY(0.45em);
   filter: blur(10px);
   animation: ltr-in 1.1s var(--ease) forwards;
+  background: linear-gradient(180deg, var(--ivory) 30%, var(--champagne) 75%, var(--gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
 }
 @keyframes ltr-in {
   to { opacity: 1; transform: translateY(0); filter: blur(0); }
