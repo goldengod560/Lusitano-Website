@@ -42,9 +42,18 @@ body {
   letter-spacing: 0.01em;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  /* No blue flash when tapping anything on Android/iOS */
+  -webkit-tap-highlight-color: transparent;
 }
 
-img { max-width: 100%; display: block; }
+img {
+  max-width: 100%;
+  display: block;
+  /* Blocks the long-press menu / Google Lens product chip on images */
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
+  user-select: none;
+}
 a { color: inherit; text-decoration: none; }
 
 ::selection { background: var(--gold); color: var(--black); }
@@ -293,6 +302,8 @@ h2 em, .story-line em {
   /* Mint glow to match the brand mark, sitting it in soft light */
   filter: drop-shadow(0 0 50px rgba(70, 230, 175, 0.22))
           drop-shadow(0 0 110px rgba(70, 230, 175, 0.10));
+  /* Decorative — not clickable/long-pressable, so no Lens chip */
+  pointer-events: none;
 }
 
 @keyframes logo-in {
@@ -411,47 +422,49 @@ h2 em, .story-line em {
   transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry));
   transition: border-color 0.6s var(--ease), box-shadow 0.6s var(--ease),
               transform 0.25s ease-out;
+  /* No blue flash on mobile tap */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
-/* The aura — a mood-colored glow that blooms on hover/tap/focus */
+/* The aura — each scent's signature glow. Faintly present at rest,
+   blooms fully on hover / tap / keyboard focus. */
 .scent-card .aura {
   position: absolute;
   inset: -40%;
   background:
-    radial-gradient(circle at 30% 25%, var(--aura-1), transparent 55%),
-    radial-gradient(circle at 75% 80%, var(--aura-2), transparent 55%);
-  opacity: 0;
-  transform: scale(0.85);
+    radial-gradient(circle at 30% 25%, color-mix(in srgb, var(--c1) 45%, transparent), transparent 55%),
+    radial-gradient(circle at 75% 80%, color-mix(in srgb, var(--c2) 30%, transparent), transparent 55%);
+  opacity: 0.14;
+  transform: scale(0.9);
   transition: opacity 1s var(--ease), transform 1.4s var(--ease);
   pointer-events: none;
 }
 
-/* Floating mist wisps inside the card */
-.card-mist { position: absolute; inset: 0; pointer-events: none; }
-.card-mist i {
+/* The fx layer holds each scent's animation (ripples, smoke, sparkle…).
+   Softly visible at rest, full strength when the card is awakened.
+   Animations only run while the card is on screen (.inview from JS). */
+.scent-card .fx {
   position: absolute;
-  width: 130px; height: 130px;
-  border-radius: 50%;
-  filter: blur(34px);
-  background: var(--aura-1);
-  opacity: 0;
-  transition: opacity 1.2s var(--ease);
-  will-change: transform;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.4;
+  transition: opacity 0.9s var(--ease);
 }
-.card-mist i:nth-child(1) { left: -10%; bottom: -20%; animation: wisp-1 9s ease-in-out infinite; }
-.card-mist i:nth-child(2) { right: -12%; top: -16%; background: var(--aura-2); animation: wisp-2 11s ease-in-out infinite; }
-.card-mist i:nth-child(3) { left: 35%; top: 30%; width: 90px; height: 90px; animation: wisp-3 13s ease-in-out infinite; }
+.scent-card .fx i {
+  position: absolute;
+  display: block;
+  animation-play-state: paused;
+}
+.scent-card.inview .fx i { animation-play-state: running; }
 
-@keyframes wisp-1 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(18px,-26px); } }
-@keyframes wisp-2 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-16px,20px) scale(1.15); } }
-@keyframes wisp-3 { 0%,100% { transform: translate(0,0) scale(0.9); } 50% { transform: translate(12px,-16px) scale(1.1); } }
-
-/* Awakened state: hover (desktop), .active (mobile tap), or keyboard focus */
+/* Awakened state */
 .scent-card:hover,
 .scent-card.active,
 .scent-card:focus-visible {
-  border-color: var(--aura-edge, rgba(201,163,92,0.45));
-  box-shadow: 0 18px 50px -18px var(--aura-shadow, rgba(201,163,92,0.35));
+  border-color: color-mix(in srgb, var(--c1) 55%, transparent);
+  box-shadow: 0 18px 50px -18px color-mix(in srgb, var(--c1) 50%, transparent);
 }
 .scent-card:hover .aura,
 .scent-card.active .aura,
@@ -459,9 +472,9 @@ h2 em, .story-line em {
   opacity: 1;
   transform: scale(1);
 }
-.scent-card:hover .card-mist i,
-.scent-card.active .card-mist i,
-.scent-card:focus-visible .card-mist i { opacity: 0.55; }
+.scent-card:hover .fx,
+.scent-card.active .fx,
+.scent-card:focus-visible .fx { opacity: 1; }
 
 .card-body { position: relative; z-index: 2; }
 
@@ -498,82 +511,257 @@ h2 em, .story-line em {
 }
 
 /* ============================================================
-   SCENT MOODS
-   EDIT AURA COLORS HERE — each mood sets two glow colors,
-   an edge color, and a shadow color.
+   SCENT PALETTES — every scent has its own two colors.
+   EDIT COLORS HERE. --c1 = main glow, --c2 = highlight.
 ============================================================ */
-[data-mood="aquatic"] {
-  --aura-1: rgba(61, 122, 158, 0.45);
-  --aura-2: rgba(158, 210, 230, 0.25);
-  --aura-edge: rgba(126, 180, 210, 0.5);
-  --aura-shadow: rgba(61, 122, 158, 0.45);
+[data-scent="cold-water"]    { --c1: #3d86b8; --c2: #bee9f5; }
+[data-scent="black-diamond"] { --c1: #8e99a8; --c2: #dde4ee; }
+[data-scent="egyptian-musk"] { --c1: #b06a2e; --c2: #d98e4a; }
+[data-scent="memories"]      { --c1: #c4a6a0; --c2: #ebd8d3; }
+[data-scent="baby-powder"]   { --c1: #dce6ec; --c2: #f7f4ee; }
+[data-scent="pineapple"]     { --c1: #e3b23c; --c2: #f2d06b; }
+[data-scent="bubble-gum"]    { --c1: #dd93ab; --c2: #f2c4d0; }
+[data-scent="horizon"]       { --c1: #b7c9d6; --c2: #e8d5a8; }
+[data-scent="lavender"]      { --c1: #9a86c8; --c2: #c9bce8; }
+[data-scent="new-car"]       { --c1: #8a6a4c; --c2: #9fb0be; }
+[data-scent="vanilla"]       { --c1: #d8b988; --c2: #f4e6cb; }
+[data-scent="cantaloupe"]    { --c1: #e58e6d; --c2: #b9cc95; }
+[data-scent="sandalwood"]    { --c1: #c9a35c; --c2: #8a5a2b; }
+[data-scent="sea-breeze"]    { --c1: #3fa796; --c2: #a9e2d2; }
+[data-scent="mango"]         { --c1: #e8853d; --c2: #f5b26b; }
+[data-scent="ocean"]         { --c1: #2e6f95; --c2: #7fb6d9; }
+[data-scent="crystal"]       { --c1: #9fd8dc; --c2: #e4fbfc; }
+
+/* ============================================================
+   SCENT ANIMATIONS — one motif per scent family, colored by
+   each scent's own palette. All transform/opacity only.
+============================================================ */
+
+/* Ripple — Cold Water: expanding water rings */
+[data-anim="ripple"] .fx i {
+  left: 50%; top: 55%;
+  width: 130px; height: 130px;
+  margin: -65px 0 0 -65px;
+  border: 1px solid color-mix(in srgb, var(--c2) 80%, transparent);
+  border-radius: 50%;
+  opacity: 0;
+  animation: fx-ripple 4.8s linear infinite;
 }
-[data-mood="marine"] {
-  --aura-1: rgba(62, 132, 128, 0.42);
-  --aura-2: rgba(140, 205, 195, 0.22);
-  --aura-edge: rgba(120, 190, 182, 0.5);
-  --aura-shadow: rgba(62, 132, 128, 0.45);
+[data-anim="ripple"] .fx i:nth-child(2) { animation-delay: 1.6s; }
+[data-anim="ripple"] .fx i:nth-child(3) { animation-delay: 3.2s; }
+@keyframes fx-ripple {
+  0%   { transform: scale(0.15); opacity: 0.8; }
+  100% { transform: scale(1.6);  opacity: 0; }
 }
-[data-mood="bright"] {
-  --aura-1: rgba(183, 201, 214, 0.30);
-  --aura-2: rgba(232, 213, 168, 0.28);
-  --aura-edge: rgba(210, 215, 205, 0.5);
-  --aura-shadow: rgba(183, 201, 214, 0.35);
+
+/* Waves — Ocean: slow rolling swells */
+[data-anim="waves"] .fx i {
+  left: -45%;
+  width: 95%; height: 44px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--c1) 55%, transparent);
+  filter: blur(16px);
+  animation: fx-wave 7s ease-in-out infinite;
 }
-[data-mood="musk"] {
-  --aura-1: rgba(176, 106, 46, 0.45);
-  --aura-2: rgba(92, 51, 23, 0.55);
-  --aura-edge: rgba(200, 140, 80, 0.5);
-  --aura-shadow: rgba(176, 106, 46, 0.45);
+[data-anim="waves"] .fx i:nth-child(1) { top: 56%; }
+[data-anim="waves"] .fx i:nth-child(2) { top: 70%; animation-delay: 1.3s; background: color-mix(in srgb, var(--c2) 40%, transparent); }
+[data-anim="waves"] .fx i:nth-child(3) { top: 84%; animation-delay: 2.6s; }
+@keyframes fx-wave {
+  0%, 100% { transform: translateX(0); }
+  50%      { transform: translateX(70%); }
 }
-[data-mood="wood"] {
-  --aura-1: rgba(138, 90, 43, 0.45);
-  --aura-2: rgba(201, 163, 92, 0.30);
-  --aura-edge: rgba(201, 163, 92, 0.5);
-  --aura-shadow: rgba(138, 90, 43, 0.5);
+
+/* Breeze — Sea Breeze: fresh air streaks sweeping through */
+[data-anim="breeze"] .fx i {
+  left: -55%;
+  width: 45%; height: 2px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--c2) 85%, transparent), transparent);
+  animation: fx-breeze 3.8s linear infinite;
 }
-[data-mood="powder"] {
-  --aura-1: rgba(244, 236, 226, 0.20);
-  --aura-2: rgba(217, 207, 196, 0.16);
-  --aura-edge: rgba(244, 236, 226, 0.4);
-  --aura-shadow: rgba(244, 236, 226, 0.18);
+[data-anim="breeze"] .fx i:nth-child(1) { top: 30%; }
+[data-anim="breeze"] .fx i:nth-child(2) { top: 52%; animation-delay: 1.2s; }
+[data-anim="breeze"] .fx i:nth-child(3) { top: 74%; animation-delay: 2.4s; }
+@keyframes fx-breeze {
+  0%   { transform: translateX(0); opacity: 0; }
+  15%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { transform: translateX(380%); opacity: 0; }
 }
-[data-mood="dark"] {
-  --aura-1: rgba(150, 158, 172, 0.26);
-  --aura-2: rgba(40, 42, 52, 0.7);
-  --aura-edge: rgba(190, 196, 210, 0.45);
-  --aura-shadow: rgba(120, 128, 145, 0.4);
+
+/* Sparkle — Black Diamond & Crystal: glinting facets */
+[data-anim="sparkle"] .fx i {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--c2);
+  box-shadow: 0 0 12px var(--c2), 0 0 26px color-mix(in srgb, var(--c1) 60%, transparent);
+  animation: fx-twinkle 2.8s ease-in-out infinite;
 }
-[data-mood="fruit"] {
-  --aura-1: rgba(201, 123, 61, 0.42);
-  --aura-2: rgba(224, 164, 88, 0.26);
-  --aura-edge: rgba(224, 164, 88, 0.5);
-  --aura-shadow: rgba(201, 123, 61, 0.42);
+[data-anim="sparkle"] .fx i:nth-child(1) { left: 24%; top: 28%; }
+[data-anim="sparkle"] .fx i:nth-child(2) { left: 68%; top: 20%; animation-delay: 0.9s; }
+[data-anim="sparkle"] .fx i:nth-child(3) { left: 50%; top: 48%; animation-delay: 1.8s; }
+@keyframes fx-twinkle {
+  0%, 100% { opacity: 0; transform: scale(0.3); }
+  50%      { opacity: 1; transform: scale(1.15); }
 }
-[data-mood="sweet"] {
-  --aura-1: rgba(201, 138, 158, 0.35);
-  --aura-2: rgba(232, 196, 200, 0.20);
-  --aura-edge: rgba(220, 170, 185, 0.45);
-  --aura-shadow: rgba(201, 138, 158, 0.38);
+
+/* Smoke — Egyptian Musk & Sandalwood: warm rising wisps */
+[data-anim="smoke"] .fx i {
+  bottom: -34%;
+  width: 76px; height: 112px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--c1) 55%, transparent);
+  filter: blur(20px);
+  animation: fx-rise 7.5s ease-in infinite;
 }
-[data-mood="floral"] {
-  --aura-1: rgba(142, 124, 195, 0.38);
-  --aura-2: rgba(190, 180, 220, 0.20);
-  --aura-edge: rgba(170, 155, 210, 0.45);
-  --aura-shadow: rgba(142, 124, 195, 0.4);
+[data-anim="smoke"] .fx i:nth-child(1) { left: 12%; }
+[data-anim="smoke"] .fx i:nth-child(2) { left: 44%; animation-delay: 2.5s; background: color-mix(in srgb, var(--c2) 45%, transparent); }
+[data-anim="smoke"] .fx i:nth-child(3) { left: 70%; animation-delay: 5s; }
+@keyframes fx-rise {
+  0%   { transform: translateY(0) scale(0.8); opacity: 0; }
+  20%  { opacity: 0.65; }
+  100% { transform: translateY(-240px) scale(1.35); opacity: 0; }
 }
-[data-mood="vanilla"] {
-  --aura-1: rgba(217, 179, 128, 0.40);
-  --aura-2: rgba(242, 226, 196, 0.22);
-  --aura-edge: rgba(228, 198, 152, 0.5);
-  --aura-shadow: rgba(217, 179, 128, 0.42);
+
+/* Powder — Memories & Baby Powder: soft specks settling */
+[data-anim="powder"] .fx i {
+  top: -12%;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--c2);
+  filter: blur(2px);
+  animation: fx-settle 9s linear infinite;
 }
-[data-mood="leather"] {
-  --aura-1: rgba(122, 92, 68, 0.48);
-  --aura-2: rgba(74, 85, 96, 0.40);
-  --aura-edge: rgba(150, 122, 95, 0.5);
-  --aura-shadow: rgba(90, 75, 60, 0.5);
+[data-anim="powder"] .fx i:nth-child(1) { left: 22%; }
+[data-anim="powder"] .fx i:nth-child(2) { left: 54%; animation-delay: 3s; }
+[data-anim="powder"] .fx i:nth-child(3) { left: 78%; animation-delay: 6s; width: 6px; height: 6px; }
+@keyframes fx-settle {
+  0%   { transform: translate(0, 0); opacity: 0; }
+  12%  { opacity: 0.8; }
+  100% { transform: translate(26px, 280px); opacity: 0; }
 }
+
+/* Orbs — Pineapple, Cantaloupe & Mango: juicy spheres drifting up */
+[data-anim="orbs"] .fx i {
+  bottom: -22%;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--c2) 80%, transparent), color-mix(in srgb, var(--c1) 50%, transparent));
+  filter: blur(7px);
+  animation: fx-float 8s ease-in-out infinite;
+}
+[data-anim="orbs"] .fx i:nth-child(1) { left: 16%; }
+[data-anim="orbs"] .fx i:nth-child(2) { left: 52%; animation-delay: 2.7s; width: 30px; height: 30px; }
+[data-anim="orbs"] .fx i:nth-child(3) { left: 76%; animation-delay: 5.4s; width: 36px; height: 36px; }
+@keyframes fx-float {
+  0%   { transform: translateY(0); opacity: 0; }
+  15%  { opacity: 0.7; }
+  100% { transform: translateY(-260px); opacity: 0; }
+}
+
+/* Bubbles — Bubble Gum: playful bubbles wobbling upward */
+[data-anim="bubbles"] .fx i {
+  bottom: -14%;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--c2) 85%, transparent);
+  animation: fx-bubble 6s ease-in infinite;
+}
+[data-anim="bubbles"] .fx i:nth-child(1) { left: 22%; }
+[data-anim="bubbles"] .fx i:nth-child(2) { left: 52%; animation-delay: 2s; width: 12px; height: 12px; }
+[data-anim="bubbles"] .fx i:nth-child(3) { left: 74%; animation-delay: 4s; width: 22px; height: 22px; }
+@keyframes fx-bubble {
+  0%   { transform: translate(0, 0); opacity: 0; }
+  15%  { opacity: 0.9; }
+  50%  { transform: translate(12px, -120px); }
+  100% { transform: translate(-8px, -250px); opacity: 0; }
+}
+
+/* Petals — Lavender: petals drifting down on the breeze */
+[data-anim="petals"] .fx i {
+  top: -14%;
+  width: 10px; height: 14px;
+  border-radius: 60% 40% 60% 40%;
+  background: color-mix(in srgb, var(--c1) 85%, transparent);
+  animation: fx-petal 8.5s ease-in-out infinite;
+}
+[data-anim="petals"] .fx i:nth-child(1) { left: 30%; }
+[data-anim="petals"] .fx i:nth-child(2) { left: 60%; animation-delay: 2.8s; background: color-mix(in srgb, var(--c2) 85%, transparent); }
+[data-anim="petals"] .fx i:nth-child(3) { left: 82%; animation-delay: 5.6s; width: 8px; height: 11px; }
+@keyframes fx-petal {
+  0%   { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  12%  { opacity: 0.85; }
+  100% { transform: translate(-64px, 290px) rotate(230deg); opacity: 0; }
+}
+
+/* Beam — Horizon: a slow pass of morning light */
+[data-anim="beam"] .fx i:nth-child(1) {
+  top: 0; bottom: 0; left: -80px;
+  width: 64px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--c2) 40%, transparent), transparent);
+  transform: skewX(-16deg);
+  animation: fx-beam 6s ease-in-out infinite;
+}
+[data-anim="beam"] .fx i:nth-child(2) {
+  left: 0; right: 0; top: 62%;
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--c1) 70%, transparent), transparent);
+  animation: fx-horizon-line 4s ease-in-out infinite;
+}
+[data-anim="beam"] .fx i:nth-child(3) { display: none; }
+@keyframes fx-beam {
+  0%        { transform: skewX(-16deg) translateX(0); }
+  65%, 100% { transform: skewX(-16deg) translateX(520px); }
+}
+@keyframes fx-horizon-line {
+  0%, 100% { opacity: 0.25; }
+  50%      { opacity: 0.9; }
+}
+
+/* Sheen — New Car: light gliding across fresh leather */
+[data-anim="sheen"] .fx i:nth-child(1) {
+  top: 0; bottom: 0; left: -60px;
+  width: 36px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--c2) 45%, transparent), transparent);
+  transform: skewX(-22deg);
+  animation: fx-sheen 5.5s ease-in-out infinite;
+}
+[data-anim="sheen"] .fx i:nth-child(2) {
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 110%, color-mix(in srgb, var(--c1) 35%, transparent), transparent 60%);
+  animation: fx-leather-glow 6s ease-in-out infinite;
+}
+[data-anim="sheen"] .fx i:nth-child(3) { display: none; }
+@keyframes fx-sheen {
+  0%        { transform: skewX(-22deg) translateX(0); }
+  55%, 100% { transform: skewX(-22deg) translateX(520px); }
+}
+@keyframes fx-leather-glow {
+  0%, 100% { opacity: 0.5; }
+  50%      { opacity: 1; }
+}
+
+/* Swirl — Vanilla: cream slowly folding into itself */
+[data-anim="swirl"] .fx i:nth-child(1) {
+  left: 50%; top: 52%;
+  width: 170px; height: 170px;
+  margin: -85px 0 0 -85px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0%, color-mix(in srgb, var(--c1) 50%, transparent) 28%, transparent 60%);
+  filter: blur(13px);
+  animation: fx-spin 15s linear infinite;
+}
+[data-anim="swirl"] .fx i:nth-child(2) {
+  left: 50%; top: 52%;
+  width: 110px; height: 110px;
+  margin: -55px 0 0 -55px;
+  border-radius: 50%;
+  background: conic-gradient(from 180deg, transparent 0%, color-mix(in srgb, var(--c2) 45%, transparent) 25%, transparent 55%);
+  filter: blur(10px);
+  animation: fx-spin-reverse 11s linear infinite;
+}
+[data-anim="swirl"] .fx i:nth-child(3) { display: none; }
+@keyframes fx-spin         { to { transform: rotate(360deg); } }
+@keyframes fx-spin-reverse { to { transform: rotate(-360deg); } }
 
 /* ============================================================
    COLLECTIONS
@@ -607,8 +795,7 @@ h2 em, .story-line em {
 .cat-visual {
   aspect-ratio: 4 / 3;
   overflow: hidden;
-  padding: 1.1rem;            /* breathing room so the full product shows */
-  /* Fallback panel if no image is present, and frame behind contained images */
+  /* Fallback panel if no image is present */
   background:
     radial-gradient(circle at 30% 20%, rgba(201,163,92,0.18), transparent 55%),
     linear-gradient(160deg, #221c14, #0f0c08);
@@ -616,8 +803,9 @@ h2 em, .story-line em {
 .cat-visual img {
   width: 100%;
   height: 100%;
-  object-fit: contain;        /* show the entire bottle/box, not a zoomed crop */
+  object-fit: cover;
   transition: transform 1.2s var(--ease), opacity 0.6s;
+  pointer-events: none; /* decorative — no long-press / Lens chip */
 }
 .cat-card:hover .cat-visual img { transform: scale(1.06); }
 
@@ -824,32 +1012,23 @@ h2 em, .story-line em {
 }
 
 @media (max-width: 720px) {
-  /* Mobile nav: glass panel that drops from the bar.
-     Anchored with position:absolute to the nav (not fixed) so the
-     menu is never affected by the nav's backdrop-filter, which would
-     otherwise trap a fixed overlay inside the top bar and push it
-     off-screen. */
+  /* Mobile nav: slide-down glass panel */
   .nav-toggle { display: flex; }
   .nav-links {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
+    position: fixed;
+    inset: 0;
     flex-direction: column;
-    align-items: center;
-    gap: 1.6rem;
-    padding: 2rem 1.5rem 2.4rem;
-    background: rgba(10, 8, 6, 0.96);
+    justify-content: center;
+    gap: 2rem;
+    background: rgba(10, 8, 6, 0.92);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    border-bottom: 1px solid var(--line);
     opacity: 0;
-    transform: translateY(-12px);
     pointer-events: none;
-    transition: opacity 0.4s var(--ease), transform 0.4s var(--ease);
+    transition: opacity 0.45s var(--ease);
   }
-  .nav-links.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
-  .nav-links a { font-size: 1rem; }
+  .nav-links.open { opacity: 1; pointer-events: auto; }
+  .nav-links a { font-size: 0.95rem; }
 
   /* Scent cards become a luxe swipe row */
   .scent-grid {
@@ -895,45 +1074,3 @@ h2 em, .story-line em {
   .scent-card { transform: none !important; }
   #particles { display: none; }
 }
-
-/* ============================================================
-   SCENT MOTIFS  (Fix: a visual on every scent)
-   A faint line-art glyph per mood, top-right of each card,
-   tinted by the mood's aura color and brightening on hover/tap.
-   EDIT: to change a glyph, swap its --motif SVG below.
-============================================================ */
-.scent-card::after {
-  content: "";
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 60px;
-  height: 60px;
-  z-index: 1;
-  pointer-events: none;
-  background-color: var(--aura-edge, rgba(201,163,92,0.5));
-  -webkit-mask: var(--motif, url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M12%203c.6%204.5%201.5%205.4%206%206-4.5.6-5.4%201.5-6%206-.6-4.5-1.5-5.4-6-6%204.5-.6%205.4-1.5%206-6Z%22%2F%3E%3C%2Fsvg%3E")) center / contain no-repeat;
-  mask: var(--motif, url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M12%203c.6%204.5%201.5%205.4%206%206-4.5.6-5.4%201.5-6%206-.6-4.5-1.5-5.4-6-6%204.5-.6%205.4-1.5%206-6Z%22%2F%3E%3C%2Fsvg%3E")) center / contain no-repeat;
-  opacity: 0.16;
-  transform: scale(0.96);
-  transition: opacity 0.6s var(--ease), transform 0.6s var(--ease);
-}
-.scent-card:hover::after,
-.scent-card.active::after,
-.scent-card:focus-visible::after {
-  opacity: 0.55;
-  transform: scale(1.06) rotate(-3deg);
-}
-
-[data-mood="aquatic"] { --motif: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M12%203C12%203%205%2011%205%2015a7%207%200%200%200%2014%200C19%2011%2012%203%2012%203Z%22%2F%3E%3C%2Fsvg%3E"); }
-[data-mood="marine"] { --motif: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M2%209c2.5-2.5%205-2.5%207.5%200s5%202.5%207.5%200%22%2F%3E%3Cpath%20d%3D%22M2%2015c2.5-2.5%205-2.5%207.5%200s5%202.5%207.5%200%22%2F%3E%3C%2Fsvg%3E"); }
-[data-mood="bright"] { --motif: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%224.2%22%2F%3E%3Cpath%20d%3D%22M12%202v2.5M12%2019.5V22M2%2012h2.5M19.5%2012H22M5%205l1.8%201.8M17.2%2017.2L19%2019M19%205l-1.8%201.8M6.8%2017.2L5%2019%22%2F%3E%3C%2Fsvg%3E"); }
-[data-mood="musk"] { --motif: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M9%2021c0-4%205-4%205-8s-4-4-4-7%204-3%204-3%22%2F%3E%3Cpath%20d%3D%22M14%2021c0-3%204-3%204-6%22%2F%3E%3C%2Fsvg%3E"); }
-[data-mood="wood"] { --motif: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%223%22%2F%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%226.5%22%2F%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%2210%22%2F%3E%3C%2Fsvg%3E"); }
-[data-mood="powder"] { --motif: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M7%2017h10a3.5%203.5%200%200%200%20.4-7A5%205%200%200%200%208%208.5%203.8%203.8%200%200%200%207%2017Z%22%2F%3E%3C%2Fsvg%3E"); }
-[data-mood="dark"] { --motif: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M12%202%2021%2012%2012%2022%203%2012Z%22%2F%3E%3Cpath%20d%3D%22M12%207%2016%2012%2012%2017%208%2012Z%22%2F%3E%3C%2Fsvg%3E"); }
-[data-mood="fruit"] { --motif: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M12%208a5.5%205.5%200%201%200%200%2011%205.5%205.5%200%200%200%200-11Z%22%2F%3E%3Cpath%20d%3D%22M12%208c0-3%202-5%205-5-0%203-2%205-5%205Z%22%2F%3E%3C%2Fsvg%3E"); }
-[data-mood="sweet"] { --motif: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M12%2020S4%2014.5%204%209a4%204%200%200%201%208-1%204%204%200%200%201%208%201c0%205.5-8%2011-8%2011Z%22%2F%3E%3C%2Fsvg%3E"); }
-[data-mood="floral"] { --motif: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cellipse%20cx%3D%2212%22%20cy%3D%226.6%22%20rx%3D%222.1%22%20ry%3D%223.6%22%20transform%3D%22rotate%280%2012%2012%29%22%2F%3E%3Cellipse%20cx%3D%2212%22%20cy%3D%226.6%22%20rx%3D%222.1%22%20ry%3D%223.6%22%20transform%3D%22rotate%2872%2012%2012%29%22%2F%3E%3Cellipse%20cx%3D%2212%22%20cy%3D%226.6%22%20rx%3D%222.1%22%20ry%3D%223.6%22%20transform%3D%22rotate%28144%2012%2012%29%22%2F%3E%3Cellipse%20cx%3D%2212%22%20cy%3D%226.6%22%20rx%3D%222.1%22%20ry%3D%223.6%22%20transform%3D%22rotate%28216%2012%2012%29%22%2F%3E%3Cellipse%20cx%3D%2212%22%20cy%3D%226.6%22%20rx%3D%222.1%22%20ry%3D%223.6%22%20transform%3D%22rotate%28288%2012%2012%29%22%2F%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%221.5%22%2F%3E%3C%2Fsvg%3E"); }
-[data-mood="vanilla"] { --motif: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M12%2021c-3%200-5-2-5-5%200-3%205-13%205-13s5%2010%205%2013c0%203-2%205-5%205Z%22%2F%3E%3Cpath%20d%3D%22M9.5%2014h5%22%2F%3E%3C%2Fsvg%3E"); }
-[data-mood="leather"] { --motif: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%229%22%2F%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%222.4%22%2F%3E%3Cpath%20d%3D%22M12%203v6.6M5.5%2018.5l4.4-4.4M18.5%2018.5l-4.4-4.4%22%2F%3E%3C%2Fsvg%3E"); }

@@ -36,20 +36,8 @@
   );
 
   /* ----------------------------------------------------------
-     2. Hero title — split into letters for the staggered reveal
+     2. (Hero brand mark is now an image — no JS needed)
   ---------------------------------------------------------- */
-  const heroTitle = document.getElementById("heroTitle");
-  if (heroTitle && !reduceMotion) {
-    const text = heroTitle.textContent.trim();
-    heroTitle.textContent = "";
-    [...text].forEach((ch, i) => {
-      const span = document.createElement("span");
-      span.className = "ltr";
-      span.textContent = ch;
-      span.style.animationDelay = `${0.25 + i * 0.09}s`;
-      heroTitle.appendChild(span);
-    });
-  }
 
   /* ----------------------------------------------------------
      3. Gold particle field (hero) — lightweight canvas
@@ -164,9 +152,21 @@
   }
 
   /* ----------------------------------------------------------
-     6. Scent cards — 3D tilt on desktop, tap-to-awaken on mobile
+     6. Scent cards — 3D tilt on desktop, tap-to-awaken on mobile.
+        Each card's scent animation only plays while the card is
+        actually on screen (keeps scrolling smooth on phones).
   ---------------------------------------------------------- */
   const cards = document.querySelectorAll(".scent-card");
+
+  if (!reduceMotion) {
+    const cardIO = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) e.target.classList.toggle("inview", e.isIntersecting);
+      },
+      { rootMargin: "60px" }
+    );
+    cards.forEach((c) => cardIO.observe(c));
+  }
 
   cards.forEach((card) => {
     if (!isTouch && !reduceMotion) {
