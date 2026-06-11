@@ -276,38 +276,27 @@ h2 em, .story-line em {
 
 .hero-inner { position: relative; z-index: 2; max-width: 60rem; }
 
-.hero-title {
-  font-family: var(--serif);
-  font-weight: 300;
-  font-size: clamp(3.2rem, 13vw, 8.5rem);
-  letter-spacing: clamp(0.12em, 2.5vw, 0.3em);
+.hero-logo {
   margin: 1.4rem 0 1.6rem;
-  text-indent: clamp(0.12em, 2.5vw, 0.3em); /* visually centers letterspaced text */
-  background: linear-gradient(180deg, var(--ivory) 30%, var(--champagne) 75%, var(--gold));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
+  display: flex;
+  justify-content: center;
+  /* Cinematic logo entrance — scale + lift + blur in */
+  opacity: 0;
+  transform: translateY(20px) scale(0.92);
+  filter: blur(8px);
+  animation: logo-in 1.6s var(--ease) 0.2s forwards;
 }
 
-/* JS-split letters for the staggered cinematic reveal.
-   Each span re-applies the gradient — splitting the parent into
-   inline-block children breaks the parent's text-clip, so each
-   letter needs its own clipped gradient to remain visible. */
-.hero-title .ltr {
-  display: inline-block;
-  opacity: 0;
-  transform: translateY(0.45em);
-  filter: blur(10px);
-  animation: ltr-in 1.1s var(--ease) forwards;
-  background: linear-gradient(180deg, var(--ivory) 30%, var(--champagne) 75%, var(--gold));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
+.hero-logo img {
+  width: clamp(220px, 30vw, 380px);
+  height: auto;
+  /* Subtle mint glow so the logo sits in light, not just on top of black */
+  filter: drop-shadow(0 0 40px rgba(70, 230, 175, 0.18))
+          drop-shadow(0 0 80px rgba(70, 230, 175, 0.08));
 }
-@keyframes ltr-in {
-  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+
+@keyframes logo-in {
+  to { opacity: 1; transform: none; filter: blur(0); }
 }
 
 .hero-tag {
@@ -892,7 +881,7 @@ h2 em, .story-line em {
     transition-duration: 0.01ms !important;
   }
   .reveal { opacity: 1; transform: none; }
-  .hero-title .ltr { opacity: 1; transform: none; filter: none; animation: none; }
+  .hero-logo { opacity: 1; transform: none; filter: none; animation: none; }
   .scent-card { transform: none !important; }
   #particles { display: none; }
 }
