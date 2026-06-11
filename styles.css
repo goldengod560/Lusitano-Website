@@ -293,6 +293,12 @@ h2 em, .story-line em {
   /* Subtle mint glow so the logo sits in light, not just on top of black */
   filter: drop-shadow(0 0 40px rgba(70, 230, 175, 0.18))
           drop-shadow(0 0 80px rgba(70, 230, 175, 0.08));
+  /* Fallback styling for the alt text if the image ever fails to load */
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(3rem, 11vw, 7rem);
+  letter-spacing: 0.2em;
+  color: var(--ivory);
 }
 
 @keyframes logo-in {
