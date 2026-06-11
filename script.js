@@ -36,8 +36,20 @@
   );
 
   /* ----------------------------------------------------------
-     2. (Hero brand mark is now an image — no JS needed)
+     2. Hero title — split into letters for the staggered reveal
   ---------------------------------------------------------- */
+  const heroTitle = document.getElementById("heroTitle");
+  if (heroTitle && !reduceMotion) {
+    const text = heroTitle.textContent.trim();
+    heroTitle.textContent = "";
+    [...text].forEach((ch, i) => {
+      const span = document.createElement("span");
+      span.className = "ltr";
+      span.textContent = ch;
+      span.style.animationDelay = `${0.25 + i * 0.09}s`;
+      heroTitle.appendChild(span);
+    });
+  }
 
   /* ----------------------------------------------------------
      3. Gold particle field (hero) — lightweight canvas

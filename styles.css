@@ -607,7 +607,8 @@ h2 em, .story-line em {
 .cat-visual {
   aspect-ratio: 4 / 3;
   overflow: hidden;
-  /* Fallback panel if no image is present */
+  padding: 1.1rem;            /* breathing room so the full product shows */
+  /* Fallback panel if no image is present, and frame behind contained images */
   background:
     radial-gradient(circle at 30% 20%, rgba(201,163,92,0.18), transparent 55%),
     linear-gradient(160deg, #221c14, #0f0c08);
@@ -615,7 +616,7 @@ h2 em, .story-line em {
 .cat-visual img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;        /* show the entire bottle/box, not a zoomed crop */
   transition: transform 1.2s var(--ease), opacity 0.6s;
 }
 .cat-card:hover .cat-visual img { transform: scale(1.06); }
@@ -823,23 +824,32 @@ h2 em, .story-line em {
 }
 
 @media (max-width: 720px) {
-  /* Mobile nav: slide-down glass panel */
+  /* Mobile nav: glass panel that drops from the bar.
+     Anchored with position:absolute to the nav (not fixed) so the
+     menu is never affected by the nav's backdrop-filter, which would
+     otherwise trap a fixed overlay inside the top bar and push it
+     off-screen. */
   .nav-toggle { display: flex; }
   .nav-links {
-    position: fixed;
-    inset: 0;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
     flex-direction: column;
-    justify-content: center;
-    gap: 2rem;
-    background: rgba(10, 8, 6, 0.92);
+    align-items: center;
+    gap: 1.6rem;
+    padding: 2rem 1.5rem 2.4rem;
+    background: rgba(10, 8, 6, 0.96);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
+    border-bottom: 1px solid var(--line);
     opacity: 0;
+    transform: translateY(-12px);
     pointer-events: none;
-    transition: opacity 0.45s var(--ease);
+    transition: opacity 0.4s var(--ease), transform 0.4s var(--ease);
   }
-  .nav-links.open { opacity: 1; pointer-events: auto; }
-  .nav-links a { font-size: 0.95rem; }
+  .nav-links.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .nav-links a { font-size: 1rem; }
 
   /* Scent cards become a luxe swipe row */
   .scent-grid {
@@ -885,3 +895,45 @@ h2 em, .story-line em {
   .scent-card { transform: none !important; }
   #particles { display: none; }
 }
+
+/* ============================================================
+   SCENT MOTIFS  (Fix: a visual on every scent)
+   A faint line-art glyph per mood, top-right of each card,
+   tinted by the mood's aura color and brightening on hover/tap.
+   EDIT: to change a glyph, swap its --motif SVG below.
+============================================================ */
+.scent-card::after {
+  content: "";
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 60px;
+  height: 60px;
+  z-index: 1;
+  pointer-events: none;
+  background-color: var(--aura-edge, rgba(201,163,92,0.5));
+  -webkit-mask: var(--motif, url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M12%203c.6%204.5%201.5%205.4%206%206-4.5.6-5.4%201.5-6%206-.6-4.5-1.5-5.4-6-6%204.5-.6%205.4-1.5%206-6Z%22%2F%3E%3C%2Fsvg%3E")) center / contain no-repeat;
+  mask: var(--motif, url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M12%203c.6%204.5%201.5%205.4%206%206-4.5.6-5.4%201.5-6%206-.6-4.5-1.5-5.4-6-6%204.5-.6%205.4-1.5%206-6Z%22%2F%3E%3C%2Fsvg%3E")) center / contain no-repeat;
+  opacity: 0.16;
+  transform: scale(0.96);
+  transition: opacity 0.6s var(--ease), transform 0.6s var(--ease);
+}
+.scent-card:hover::after,
+.scent-card.active::after,
+.scent-card:focus-visible::after {
+  opacity: 0.55;
+  transform: scale(1.06) rotate(-3deg);
+}
+
+[data-mood="aquatic"] { --motif: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M12%203C12%203%205%2011%205%2015a7%207%200%200%200%2014%200C19%2011%2012%203%2012%203Z%22%2F%3E%3C%2Fsvg%3E"); }
+[data-mood="marine"] { --motif: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M2%209c2.5-2.5%205-2.5%207.5%200s5%202.5%207.5%200%22%2F%3E%3Cpath%20d%3D%22M2%2015c2.5-2.5%205-2.5%207.5%200s5%202.5%207.5%200%22%2F%3E%3C%2Fsvg%3E"); }
+[data-mood="bright"] { --motif: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%224.2%22%2F%3E%3Cpath%20d%3D%22M12%202v2.5M12%2019.5V22M2%2012h2.5M19.5%2012H22M5%205l1.8%201.8M17.2%2017.2L19%2019M19%205l-1.8%201.8M6.8%2017.2L5%2019%22%2F%3E%3C%2Fsvg%3E"); }
+[data-mood="musk"] { --motif: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M9%2021c0-4%205-4%205-8s-4-4-4-7%204-3%204-3%22%2F%3E%3Cpath%20d%3D%22M14%2021c0-3%204-3%204-6%22%2F%3E%3C%2Fsvg%3E"); }
+[data-mood="wood"] { --motif: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%223%22%2F%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%226.5%22%2F%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%2210%22%2F%3E%3C%2Fsvg%3E"); }
+[data-mood="powder"] { --motif: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M7%2017h10a3.5%203.5%200%200%200%20.4-7A5%205%200%200%200%208%208.5%203.8%203.8%200%200%200%207%2017Z%22%2F%3E%3C%2Fsvg%3E"); }
+[data-mood="dark"] { --motif: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M12%202%2021%2012%2012%2022%203%2012Z%22%2F%3E%3Cpath%20d%3D%22M12%207%2016%2012%2012%2017%208%2012Z%22%2F%3E%3C%2Fsvg%3E"); }
+[data-mood="fruit"] { --motif: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M12%208a5.5%205.5%200%201%200%200%2011%205.5%205.5%200%200%200%200-11Z%22%2F%3E%3Cpath%20d%3D%22M12%208c0-3%202-5%205-5-0%203-2%205-5%205Z%22%2F%3E%3C%2Fsvg%3E"); }
+[data-mood="sweet"] { --motif: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M12%2020S4%2014.5%204%209a4%204%200%200%201%208-1%204%204%200%200%201%208%201c0%205.5-8%2011-8%2011Z%22%2F%3E%3C%2Fsvg%3E"); }
+[data-mood="floral"] { --motif: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cellipse%20cx%3D%2212%22%20cy%3D%226.6%22%20rx%3D%222.1%22%20ry%3D%223.6%22%20transform%3D%22rotate%280%2012%2012%29%22%2F%3E%3Cellipse%20cx%3D%2212%22%20cy%3D%226.6%22%20rx%3D%222.1%22%20ry%3D%223.6%22%20transform%3D%22rotate%2872%2012%2012%29%22%2F%3E%3Cellipse%20cx%3D%2212%22%20cy%3D%226.6%22%20rx%3D%222.1%22%20ry%3D%223.6%22%20transform%3D%22rotate%28144%2012%2012%29%22%2F%3E%3Cellipse%20cx%3D%2212%22%20cy%3D%226.6%22%20rx%3D%222.1%22%20ry%3D%223.6%22%20transform%3D%22rotate%28216%2012%2012%29%22%2F%3E%3Cellipse%20cx%3D%2212%22%20cy%3D%226.6%22%20rx%3D%222.1%22%20ry%3D%223.6%22%20transform%3D%22rotate%28288%2012%2012%29%22%2F%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%221.5%22%2F%3E%3C%2Fsvg%3E"); }
+[data-mood="vanilla"] { --motif: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M12%2021c-3%200-5-2-5-5%200-3%205-13%205-13s5%2010%205%2013c0%203-2%205-5%205Z%22%2F%3E%3Cpath%20d%3D%22M9.5%2014h5%22%2F%3E%3C%2Fsvg%3E"); }
+[data-mood="leather"] { --motif: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%229%22%2F%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%222.4%22%2F%3E%3Cpath%20d%3D%22M12%203v6.6M5.5%2018.5l4.4-4.4M18.5%2018.5l-4.4-4.4%22%2F%3E%3C%2Fsvg%3E"); }
