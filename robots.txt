@@ -1,0 +1,10 @@
+# Lusitano — robots.txt
+# Allow all search engines to crawl the site.
+
+User-agent: *
+Allow: /
+
+# Don't waste crawl budget on the wholesale confirmation page
+Disallow: /wholesale-thanks.html
+
+Sitemap: https://lusitanoperfume.com/sitemap.xml
