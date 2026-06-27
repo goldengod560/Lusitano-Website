@@ -292,4 +292,232 @@
   ---------------------------------------------------------- */
   const yearEl = document.getElementById("year");
   if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+  /* ----------------------------------------------------------
+     11. WebGL Water Ripple — Ocean Scents
+  ---------------------------------------------------------- */
+  const scentsSection = document.querySelector(".scents");
+  if (scentsSection && !reduceMotion && !isTouch) {
+    const waterCanvas = document.createElement("canvas");
+    waterCanvas.className = "water-canvas";
+    scentsSection.prepend(waterCanvas);
+
+    const gl = waterCanvas.getContext("webgl", { alpha: true, antialias: false });
+    if (!gl) {
+      waterCanvas.remove();
+    } else {
+      const vsSource = `
+        attribute vec2 a_position;
+        void main() {
+          gl_Position = vec4(a_position, 0.0, 1.0);
+        }
+      `;
+
+      const fsSource = `
+        precision highp float;
+        uniform float u_time;
+        uniform vec2 u_resolution;
+        uniform vec2 u_mouse;
+        uniform float u_mouseActive;
+        uniform float u_scroll;
+
+        float hash(vec2 p) {
+          return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
+        }
+
+        float noise(vec2 p) {
+          vec2 i = floor(p);
+          vec2 f = fract(p);
+          f = f * f * (3.0 - 2.0 * f);
+          float a = hash(i);
+          float b = hash(i + vec2(1.0, 0.0));
+          float c = hash(i + vec2(0.0, 1.0));
+          float d = hash(i + vec2(1.0, 1.0));
+          return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+        }
+
+        float fbm(vec2 p) {
+          float v = 0.0;
+          float a = 0.5;
+          for (int i = 0; i < 4; i++) {
+            v += a * noise(p);
+            p *= 2.0;
+            a *= 0.5;
+          }
+          return v;
+        }
+
+        void main() {
+          vec2 uv = gl_FragCoord.xy / u_resolution;
+          vec2 p = uv * 2.0 - 1.0;
+          p.x *= u_resolution.x / u_resolution.y;
+
+          float t = u_time * 0.4;
+
+          // Multi-layer water waves
+          float w1 = sin(p.x * 2.5 + t) * cos(p.y * 1.8 + t * 0.7);
+          float w2 = sin(p.x * 4.0 - t * 0.9) * sin(p.y * 3.5 + t * 1.1);
+          float w3 = sin(p.x * 7.0 + t * 1.3) * cos(p.y * 5.0 - t * 0.8);
+          float w4 = sin((p.x + p.y) * 3.0 + t * 0.6) * 0.5;
+          float w5 = fbm(p * 2.5 + vec2(t * 0.2, t * 0.15)) * 2.0 - 1.0;
+
+          float water = w1 * 0.15 + w2 * 0.12 + w3 * 0.08 + w4 * 0.08 + w5 * 0.1;
+
+          // Scroll intensity - waves amplify as you scroll through
+          float scrollIntensity = u_scroll * 0.4 + 0.8;
+          water *= scrollIntensity;
+
+          // Mouse ripple - multiple harmonics for realistic propagation
+          vec2 m = (u_mouse / u_resolution) * 2.0 - 1.0;
+          m.x *= u_resolution.x / u_resolution.y;
+          float md = length(p - m);
+          float ripple = sin(md * 35.0 - t * 7.0) * exp(-md * 5.0) * u_mouseActive;
+          float ripple2 = sin(md * 22.0 - t * 5.0) * exp(-md * 3.0) * u_mouseActive * 0.4;
+          float ripple3 = sin(md * 15.0 - t * 3.0) * exp(-md * 2.0) * u_mouseActive * 0.2;
+          water += ripple * 0.3 + ripple2 * 0.15 + ripple3 * 0.1;
+
+          // Caustic highlights
+          float caustic = pow(max(0.0, water + 0.3), 4.0) * 0.5;
+
+          // Deep ocean color palette (blended for all three ocean scents)
+          vec3 deep   = vec3(0.012, 0.035, 0.06);
+          vec3 mid    = vec3(0.025, 0.10, 0.18);
+          vec3 surf   = vec3(0.05, 0.22, 0.35);
+          vec3 foam   = vec3(0.10, 0.42, 0.55);
+          vec3 glow   = vec3(0.22, 0.58, 0.75);
+          vec3 specular = vec3(0.55, 0.75, 0.85);
+
+          float w = water * 0.5 + 0.5;
+          vec3 col = mix(deep, mid, smoothstep(0.0, 0.25, w));
+          col = mix(col, surf, smoothstep(0.25, 0.55, w));
+          col = mix(col, foam, smoothstep(0.55, 0.8, w + caustic * 0.15));
+          col = mix(col, glow, caustic * 0.35);
+
+          // Specular sheen - multiple angles for shimmer
+          float spec = pow(max(0.0, w1 * 0.4 + w2 * 0.3 + w3 * 0.2 + 0.35), 12.0) * 0.2;
+          float spec2 = pow(max(0.0, sin(p.x * 10.0 + t * 2.0) * cos(p.y * 8.0 - t * 1.5) * 0.5 + 0.5), 6.0) * 0.15;
+          col += specular * (spec + spec2);
+
+          // Subtle gold tint from Lusitano branding
+          col += vec3(0.08, 0.05, 0.0) * spec * 0.5;
+
+          // Vignette for depth
+          float vig = 1.0 - smoothstep(0.3, 1.3, length(p * vec2(0.85, 1.0)));
+          col *= 0.55 + vig * 0.45;
+
+          gl_FragColor = vec4(col, 0.5);
+        }
+      `;
+
+      function compile(type, source) {
+        const s = gl.createShader(type);
+        gl.shaderSource(s, source);
+        gl.compileShader(s);
+        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+          console.error("Water shader compile error:", gl.getShaderInfoLog(s));
+          gl.deleteShader(s);
+          return null;
+        }
+        return s;
+      }
+
+      const vs = compile(gl.VERTEX_SHADER, vsSource);
+      const fs = compile(gl.FRAGMENT_SHADER, fsSource);
+      if (!vs || !fs) {
+        waterCanvas.remove();
+      } else {
+        const prog = gl.createProgram();
+        gl.attachShader(prog, vs);
+        gl.attachShader(prog, fs);
+        gl.linkProgram(prog);
+        if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+          console.error("Water shader link error:", gl.getProgramInfoLog(prog));
+          waterCanvas.remove();
+        } else {
+          gl.useProgram(prog);
+
+          // Fullscreen quad
+          const buf = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+            -1, -1, 1, -1, -1, 1,
+            -1, 1, 1, -1, 1, 1
+          ]), gl.STATIC_DRAW);
+          const loc = gl.getAttribLocation(prog, "a_position");
+          gl.enableVertexAttribArray(loc);
+          gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+          // Uniforms
+          const uTime = gl.getUniformLocation(prog, "u_time");
+          const uRes = gl.getUniformLocation(prog, "u_resolution");
+          const uMouse = gl.getUniformLocation(prog, "u_mouse");
+          const uMouseActive = gl.getUniformLocation(prog, "u_mouseActive");
+          const uScroll = gl.getUniformLocation(prog, "u_scroll");
+
+          let mouseX = 0, mouseY = 0, mouseActive = 0, mouseTimeout;
+
+          scentsSection.addEventListener("mousemove", (e) => {
+            const rect = waterCanvas.getBoundingClientRect();
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            mouseX = (e.clientX - rect.left) * dpr;
+            mouseY = (rect.height - (e.clientY - rect.top)) * dpr;
+            mouseActive = 1;
+            clearTimeout(mouseTimeout);
+            mouseTimeout = setTimeout(() => { mouseActive = 0; }, 800);
+          });
+          scentsSection.addEventListener("mouseleave", () => {
+            mouseActive = 0;
+            clearTimeout(mouseTimeout);
+          });
+
+          let w, h, dpr, running = false, raf;
+
+          const resize = () => {
+            dpr = Math.min(window.devicePixelRatio || 1, 2);
+            w = waterCanvas.offsetWidth;
+            h = waterCanvas.offsetHeight;
+            waterCanvas.width = w * dpr;
+            waterCanvas.height = h * dpr;
+            gl.viewport(0, 0, waterCanvas.width, waterCanvas.height);
+          };
+
+          const getScrollProgress = () => {
+            const rect = scentsSection.getBoundingClientRect();
+            const totalScrollable = rect.height - window.innerHeight;
+            if (totalScrollable <= 0) return 0.5;
+            return Math.max(0, Math.min(1, -rect.top / totalScrollable));
+          };
+
+          const startTime = performance.now();
+          const render = () => {
+            if (!running) return;
+            const t = (performance.now() - startTime) / 1000;
+            gl.uniform1f(uTime, t);
+            gl.uniform2f(uRes, waterCanvas.width, waterCanvas.height);
+            gl.uniform2f(uMouse, mouseX, mouseY);
+            gl.uniform1f(uMouseActive, mouseActive);
+            gl.uniform1f(uScroll, getScrollProgress());
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+            raf = requestAnimationFrame(render);
+          };
+
+          resize();
+          window.addEventListener("resize", resize, { passive: true });
+
+          // IntersectionObserver for visibility
+          new IntersectionObserver(([entry]) => {
+            const wasRunning = running;
+            running = entry.isIntersecting;
+            if (running) {
+              waterCanvas.classList.add("active");
+              if (!wasRunning) render();
+            } else {
+              waterCanvas.classList.remove("active");
+              if (wasRunning) cancelAnimationFrame(raf);
+            }
+          }, { threshold: 0.05 }).observe(scentsSection);
+        }
+      }
+    }
+  }
 })();
