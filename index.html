@@ -124,6 +124,11 @@
 <body>
 
 <!-- ============================================================
+     GOLD DUST OVERLAY — subtle texture across the whole page
+============================================================ -->
+<div class="gold-dust" aria-hidden="true"></div>
+
+<!-- ============================================================
      NAVIGATION
      EDIT: change links here. "Wholesale" points to wholesale.html
      (your existing wholesale page in the same repo).
@@ -171,6 +176,31 @@
 
   <div class="scroll-hint" aria-hidden="true"><span></span></div>
 </header>
+
+<!-- ============================================================
+     2. SHOWCASE SPOTLIGHT — Featured product highlight
+     EDIT: Replace the image src with your hero product photo.
+============================================================ -->
+<section class="showcase-spotlight reveal scale" id="spotlight">
+  <div class="spotlight-card">
+    <div class="spotlight-visual">
+      <!-- REPLACE: your hero product/bottle image -->
+      <img src="images/fragrance.png" alt="Lusitano featured fragrance" loading="lazy" draggable="false">
+    </div>
+    <div class="spotlight-body">
+      <span class="spotlight-badge">Signature Collection</span>
+      <h3>Where luxury meets <em>everyday</em>.</h3>
+      <p>Seventeen bold, layered scents — each one designed to turn heads, change moods, and stay with you long after the moment passes. From glacial aquatic to warm golden musk, find the one that feels like you.</p>
+      <div class="spotlight-notes">
+        <span class="spotlight-note">Long-lasting</span>
+        <span class="spotlight-note">Oil-based</span>
+        <span class="spotlight-note">Premium</span>
+      </div>
+      <a href="#scents" class="btn btn-gold magnetic">Browse All Scents</a>
+    </div>
+  </div>
+</section>
+
 
 <main>
 
@@ -462,7 +492,11 @@
      4. MAISON / BRAND STORY
 ============================================================ -->
 <section class="section story" id="story">
-  <div class="story-glow" aria-hidden="true"></div>
+  <div class="story-bg" aria-hidden="true">
+    <!-- REPLACE: Add your horse image here. Recommended: a dramatic dark-toned horse photo.
+         If the image is missing, the section gracefully falls back to a dark gradient. -->
+    <img src="images/horse.png" alt="" loading="lazy">
+  </div>
   <div class="story-inner">
     <p class="eyebrow reveal">The Maison</p>
     <h2 class="story-line reveal">Luxury you can <em>actually</em> afford.</h2>
