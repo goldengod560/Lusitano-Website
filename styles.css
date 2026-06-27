@@ -318,7 +318,7 @@ h2 em, .story-line em { font-style: italic; color: var(--champagne); }
 .hero-logo img {
   width: clamp(320px, 48vw, 600px);
   height: auto;
-  filter: drop-shadow(0 0 60px rgba(70, 230, 175, 0.28)) drop-shadow(0 0 140px rgba(70, 230, 175, 0.14));
+  filter: drop-shadow(0 0 60px rgba(201, 163, 92, 0.28)) drop-shadow(0 0 140px rgba(201, 163, 92, 0.14));
   pointer-events: none;
 }
 @keyframes logo-in {
