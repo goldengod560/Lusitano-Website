@@ -19,8 +19,6 @@
   --serif: "Cormorant Garamond", Georgia, serif;
   --sans:  "Outfit", "Helvetica Neue", Arial, sans-serif;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --fluid: cubic-bezier(0.45, 0.05, 0.55, 0.95);
-  --soft:  cubic-bezier(0.37, 0, 0.63, 1);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -36,7 +34,6 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
-  cursor: none;
 }
 
 img {
@@ -46,47 +43,13 @@ img {
   -webkit-user-drag: none;
   user-select: none;
 }
-a { color: inherit; text-decoration: none; cursor: none; }
+a { color: inherit; text-decoration: none; }
 
 ::selection { background: var(--gold); color: var(--black); }
 :focus-visible {
   outline: 2px solid var(--gold);
   outline-offset: 3px;
   border-radius: 4px;
-}
-
-/* ============================================================
-   CUSTOM CURSOR & GOLD TRAIL
-   ============================================================ */
-.cursor {
-  position: fixed;
-  width: 12px;
-  height: 12px;
-  border: 1.5px solid var(--gold);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 9999;
-  transform: translate(-50%, -50%);
-  transition: width 0.3s var(--ease), height 0.3s var(--ease), background 0.3s var(--ease);
-  mix-blend-mode: difference;
-}
-.cursor.hovering {
-  width: 40px;
-  height: 40px;
-  background: rgba(201, 163, 92, 0.15);
-  border-color: var(--champagne);
-}
-.cursor-trail {
-  position: fixed;
-  width: 6px;
-  height: 6px;
-  background: var(--gold);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 9998;
-  opacity: 0;
-  transform: translate(-50%, -50%);
-  filter: blur(1px);
 }
 
 /* ============================================================
@@ -277,7 +240,7 @@ h2 em, .story-line em { font-style: italic; color: var(--champagne); }
 }
 .nav-cta::after { display: none; }
 
-.nav-toggle { display: none; flex-direction: column; gap: 6px; background: none; border: 0; padding: 8px; cursor: none; z-index: 110; }
+.nav-toggle { display: none; flex-direction: column; gap: 6px; background: none; border: 0; padding: 8px; z-index: 110; }
 .nav-toggle span { width: 26px; height: 1.5px; background: var(--ivory); transition: transform 0.4s var(--ease), opacity 0.4s var(--ease); }
 .nav-toggle.open span:first-child { transform: translateY(4px) rotate(45deg); }
 .nav-toggle.open span:last-child  { transform: translateY(-3.5px) rotate(-45deg); }
@@ -416,103 +379,15 @@ h2 em, .story-line em { font-style: italic; color: var(--champagne); }
 .reveal.scale.in { transform: none; }
 
 /* ============================================================
-   SHOWCASE SPOTLIGHT SECTION (NEW)
-   ============================================================ */
-.showcase-spotlight {
-  position: relative;
-  padding: 0 clamp(1.25rem, 5vw, 4rem) clamp(3rem, 6vw, 5rem);
-  max-width: 72rem;
-  margin: 0 auto;
-  z-index: 2;
-}
-.spotlight-card {
-  position: relative;
-  border-radius: 28px;
-  border: 1px solid var(--line);
-  background: linear-gradient(165deg, var(--smoke), var(--charcoal) 60%, rgba(201,163,92,0.06));
-  overflow: hidden;
-  padding: clamp(2.5rem, 5vw, 4rem);
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 2.5rem;
-  align-items: center;
-  transition: border-color 0.6s var(--ease), box-shadow 0.6s var(--ease);
-}
-.spotlight-card:hover {
-  border-color: rgba(201, 163, 92, 0.3);
-  box-shadow: 0 30px 80px -20px rgba(201, 163, 92, 0.15), 0 0 0 1px rgba(201, 163, 92, 0.1) inset;
-}
-.spotlight-visual {
-  position: relative;
-  aspect-ratio: 1 / 1;
-  border-radius: 20px;
-  overflow: hidden;
-  background: radial-gradient(circle at 40% 30%, rgba(201,163,92,0.2), transparent 55%), linear-gradient(160deg, #1a1410, #0d0a06);
-}
-.spotlight-visual img {
-  width: 100%; height: 100%; object-fit: cover;
-  transition: transform 1.4s var(--ease);
-}
-.spotlight-card:hover .spotlight-visual img { transform: scale(1.05); }
-.spotlight-visual::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, transparent 50%, rgba(10,8,6,0.5) 100%);
-}
-.spotlight-badge {
-  display: inline-block;
-  font-size: 0.65rem;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: var(--gold);
-  border: 1px solid rgba(201,163,92,0.4);
-  border-radius: 999px;
-  padding: 0.4rem 1rem;
-  margin-bottom: 1rem;
-}
-.spotlight-body h3 {
-  font-family: var(--serif);
-  font-weight: 400;
-  font-size: clamp(2rem, 4vw, 3.2rem);
-  line-height: 1.1;
-  margin-bottom: 1rem;
-}
-.spotlight-body p {
-  color: var(--ivory-60);
-  font-size: 1rem;
-  line-height: 1.7;
-  margin-bottom: 1.5rem;
-  max-width: 32rem;
-}
-.spotlight-notes {
-  display: flex;
-  gap: 0.6rem;
-  flex-wrap: wrap;
-  margin-bottom: 1.8rem;
-}
-.spotlight-note {
-  font-size: 0.68rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--gold);
-  background: rgba(201, 163, 92, 0.1);
-  border: 1px solid rgba(201, 163, 92, 0.2);
-  border-radius: 999px;
-  padding: 0.35rem 0.9rem;
-}
-
-/* ============================================================
    SCENT LIBRARY
    ============================================================ */
 .scents {
   background:
     radial-gradient(ellipse 70% 40% at 50% 0%, rgba(201,163,92,0.06), transparent 70%),
     var(--black);
-  overflow: hidden;
 }
 
-.library-group { max-width: 82rem; margin: 0 auto 5rem; position: relative; z-index: 1; }
+.library-group { max-width: 82rem; margin: 0 auto 5rem; }
 .library-group:last-child { margin-bottom: 0; }
 
 .group-head {
@@ -555,13 +430,14 @@ h2 em, .story-line em { font-style: italic; color: var(--champagne); }
   padding: 1.8rem 1.5rem;
   display: flex;
   align-items: flex-end;
-  cursor: none;
   transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry));
   transition: border-color 0.6s var(--ease), box-shadow 0.6s var(--ease), transform 0.25s ease-out;
   -webkit-tap-highlight-color: transparent;
   -webkit-user-select: none;
   user-select: none;
 }
+
+.scent-card .fx { display: none; }
 
 .scent-card .aura {
   position: absolute;
@@ -575,23 +451,6 @@ h2 em, .story-line em { font-style: italic; color: var(--champagne); }
   pointer-events: none;
 }
 
-.scent-card .fx {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.45;
-  transition: opacity 0.9s var(--ease);
-}
-.scent-card .fx i {
-  position: absolute;
-  display: block;
-  animation-play-state: paused;
-  will-change: transform, opacity, border-radius;
-}
-.scent-card.inview .fx i {
-  animation-play-state: running;
-}
-
 .scent-card:hover,
 .scent-card.active,
 .scent-card:focus-visible {
@@ -601,9 +460,6 @@ h2 em, .story-line em { font-style: italic; color: var(--champagne); }
 .scent-card:hover .aura,
 .scent-card.active .aura,
 .scent-card:focus-visible .aura { opacity: 1; transform: scale(1); }
-.scent-card:hover .fx,
-.scent-card.active .fx,
-.scent-card:focus-visible .fx { opacity: 1; }
 
 .card-body { position: relative; z-index: 2; }
 .scent-card h4 {
@@ -666,311 +522,6 @@ h2 em, .story-line em { font-style: italic; color: var(--champagne); }
 [data-scent="mango"]         { --c1: #e8853d; --c2: #f5b26b; }
 [data-scent="ocean"]         { --c1: #2e6f95; --c2: #7fb6d9; }
 [data-scent="crystal"]       { --c1: #9fd8dc; --c2: #e4fbfc; }
-
-/* ============================================================
-   V4 ORGANIC / FLUID SCENT ANIMATIONS
-   Nature-inspired: soft, flowing, alive
-   ============================================================ */
-
-/* 1. LIVING WATER — Cold Water: Organic breathing blob rings */
-[data-anim="ripple"] .fx i {
-  width: 100%;
-  height: 100%;
-  border-radius: 60% 40% 55% 45% / 50% 55% 45% 50%;
-  background: radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--c2) 50%, transparent), color-mix(in srgb, var(--c1) 25%, transparent), transparent 70%);
-  filter: blur(1px);
-  mix-blend-mode: screen;
-}
-
-[data-anim="ripple"] .fx i:nth-child(1) { animation: livingWater 6s var(--fluid) infinite; }
-[data-anim="ripple"] .fx i:nth-child(2) { animation: livingWater 8s var(--fluid) infinite 2s; }
-[data-anim="ripple"] .fx i:nth-child(3) { animation: livingWater 10s var(--fluid) infinite 4s; }
-
-@keyframes livingWater {
-  0% { transform: scale(0.2) translate(0, 0); opacity: 0; border-radius: 60% 40% 55% 45% / 50% 55% 45% 50%; }
-  25% { transform: scale(0.6) translate(-5%, -3%); opacity: 0.5; border-radius: 50% 50% 60% 40% / 55% 45% 50% 50%; }
-  50% { transform: scale(1.0) translate(3%, 5%); opacity: 0.7; border-radius: 45% 55% 50% 50% / 50% 50% 45% 55%; }
-  75% { transform: scale(1.4) translate(-2%, 2%); opacity: 0.4; border-radius: 55% 45% 45% 55% / 45% 55% 50% 50%; }
-  100% { transform: scale(1.8) translate(0, 0); opacity: 0; border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%; }
-}
-
-/* 2. DEEP CURRENTS — Ocean: Flowing horizontal bands */
-[data-anim="waves"] .fx i {
-  width: 120%;
-  height: 35%;
-  left: -10%;
-  border-radius: 50% 50% 50% 50% / 100% 100% 0 0;
-  background: linear-gradient(90deg, color-mix(in srgb, var(--c1) 0%, transparent), color-mix(in srgb, var(--c2) 35%, transparent), color-mix(in srgb, var(--c1) 0%, transparent));
-  filter: blur(2px);
-  mix-blend-mode: screen;
-}
-
-[data-anim="waves"] .fx i:nth-child(1) { top: 20%; animation: deepCurrent 7s var(--soft) infinite; }
-[data-anim="waves"] .fx i:nth-child(2) { top: 45%; animation: deepCurrent 9s var(--soft) infinite 2.5s; }
-[data-anim="waves"] .fx i:nth-child(3) { top: 70%; animation: deepCurrent 11s var(--soft) infinite 5s; }
-
-@keyframes deepCurrent {
-  0% { transform: translateX(-10%) skewY(-2deg); opacity: 0.3; }
-  25% { transform: translateX(5%) skewY(1deg); opacity: 0.6; }
-  50% { transform: translateX(-3%) skewY(-1deg); opacity: 0.5; }
-  75% { transform: translateX(8%) skewY(2deg); opacity: 0.7; }
-  100% { transform: translateX(-10%) skewY(-2deg); opacity: 0.3; }
-}
-
-/* 3. WIND VEILS — Sea Breeze: Flowing silk ribbons */
-[data-anim="breeze"] .fx i {
-  width: 150%;
-  height: 8%;
-  border-radius: 50% 50% 50% 50% / 100% 100% 0 0;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--c2) 0%, transparent), color-mix(in srgb, var(--c1) 25%, transparent), color-mix(in srgb, var(--c2) 0%, transparent));
-  filter: blur(3px);
-  mix-blend-mode: screen;
-  transform-origin: left center;
-}
-
-[data-anim="breeze"] .fx i:nth-child(1) { top: 15%; animation: windVeil 6s var(--fluid) infinite; }
-[data-anim="breeze"] .fx i:nth-child(2) { top: 40%; animation: windVeil 8s var(--fluid) infinite 1.5s; }
-[data-anim="breeze"] .fx i:nth-child(3) { top: 65%; animation: windVeil 7s var(--fluid) infinite 3s; }
-
-@keyframes windVeil {
-  0% { transform: translateX(-20%) translateY(0) rotate(-3deg); opacity: 0; }
-  30% { transform: translateX(-5%) translateY(-5px) rotate(-1deg); opacity: 0.5; }
-  60% { transform: translateX(10%) translateY(3px) rotate(1deg); opacity: 0.4; }
-  100% { transform: translateX(25%) translateY(0) rotate(3deg); opacity: 0; }
-}
-
-/* 4. FROST BLOOM — Black Diamond & Crystal: Organic crystal growth */
-[data-anim="sparkle"] .fx i {
-  width: 30px;
-  height: 30px;
-  border-radius: 40% 60% 50% 50% / 50% 40% 60% 50%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--c2) 80%, transparent), color-mix(in srgb, var(--c1) 50%, transparent), transparent 70%);
-  filter: blur(0.5px);
-  mix-blend-mode: screen;
-}
-
-[data-anim="sparkle"] .fx i:nth-child(1) { left: 20%; top: 30%; animation: frostBloom 5s var(--soft) infinite; }
-[data-anim="sparkle"] .fx i:nth-child(2) { left: 60%; top: 50%; animation: frostBloom 6s var(--soft) infinite 1.5s; }
-[data-anim="sparkle"] .fx i:nth-child(3) { left: 40%; top: 70%; animation: frostBloom 7s var(--soft) infinite 3s; }
-
-@keyframes frostBloom {
-  0% { transform: scale(0.1) rotate(0deg); opacity: 0; border-radius: 40% 60% 50% 50% / 50% 40% 60% 50%; }
-  40% { transform: scale(1.2) rotate(45deg); opacity: 0.8; border-radius: 60% 40% 45% 55% / 40% 50% 50% 60%; }
-  70% { transform: scale(0.8) rotate(90deg); opacity: 0.5; border-radius: 50% 50% 60% 40% / 55% 45% 40% 60%; }
-  100% { transform: scale(0.2) rotate(135deg); opacity: 0; border-radius: 40% 60% 50% 50% / 50% 40% 60% 50%; }
-}
-
-/* 5. SACRED INCENSE — Egyptian Musk & Sandalwood: Curling smoke */
-[data-anim="smoke"] .fx i {
-  width: 40%;
-  height: 60%;
-  bottom: 0;
-  left: 30%;
-  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-  background: linear-gradient(0deg, color-mix(in srgb, var(--c1) 40%, transparent), color-mix(in srgb, var(--c2) 15%, transparent), transparent);
-  filter: blur(4px);
-  mix-blend-mode: screen;
-  transform-origin: bottom center;
-}
-
-[data-anim="smoke"] .fx i:nth-child(1) { animation: sacredIncense 10s var(--fluid) infinite; }
-[data-anim="smoke"] .fx i:nth-child(2) { left: 45%; animation: sacredIncense 12s var(--fluid) infinite 3s; }
-[data-anim="smoke"] .fx i:nth-child(3) { left: 25%; animation: sacredIncense 14s var(--fluid) infinite 6s; }
-
-@keyframes sacredIncense {
-  0% { transform: translateY(0) translateX(0) scale(0.5) rotate(0deg); opacity: 0; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; }
-  20% { transform: translateY(-20%) translateX(-5%) scale(0.8) rotate(-5deg); opacity: 0.6; border-radius: 55% 45% 50% 50% / 50% 55% 45% 50%; }
-  50% { transform: translateY(-50%) translateX(8%) scale(1.1) rotate(5deg); opacity: 0.4; border-radius: 45% 55% 55% 45% / 55% 50% 50% 55%; }
-  80% { transform: translateY(-80%) translateX(-3%) scale(0.9) rotate(-3deg); opacity: 0.2; border-radius: 50% 50% 45% 55% / 50% 55% 45% 50%; }
-  100% { transform: translateY(-100%) translateX(0) scale(0.6) rotate(0deg); opacity: 0; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; }
-}
-
-/* 6. DUST DRIFT — Memories & Baby Powder: Soft floating motes */
-[data-anim="powder"] .fx i {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--c2) 70%, transparent), color-mix(in srgb, var(--c1) 40%, transparent), transparent);
-  filter: blur(1px);
-  mix-blend-mode: screen;
-}
-
-[data-anim="powder"] .fx i:nth-child(1) { left: 15%; top: 20%; animation: dustDrift 12s var(--soft) infinite; }
-[data-anim="powder"] .fx i:nth-child(2) { left: 50%; top: 40%; animation: dustDrift 14s var(--soft) infinite 3s; }
-[data-anim="powder"] .fx i:nth-child(3) { left: 75%; top: 60%; animation: dustDrift 16s var(--soft) infinite 6s; }
-
-@keyframes dustDrift {
-  0% { transform: translate(0, 0) scale(0.5); opacity: 0; }
-  15% { transform: translate(20px, -30px) scale(1); opacity: 0.7; }
-  35% { transform: translate(-15px, -60px) scale(0.8); opacity: 0.5; }
-  55% { transform: translate(30px, -90px) scale(1.1); opacity: 0.6; }
-  75% { transform: translate(-10px, -120px) scale(0.7); opacity: 0.3; }
-  100% { transform: translate(0, -150px) scale(0.4); opacity: 0; }
-}
-
-/* 7. NECTAR BLOBS — Pineapple, Cantaloupe, Mango: Organic liquid drops */
-[data-anim="orbs"] .fx i {
-  width: 50px;
-  height: 50px;
-  border-radius: 60% 40% 55% 45% / 50% 55% 45% 50%;
-  filter: blur(1px);
-  mix-blend-mode: screen;
-}
-
-[data-anim="orbs"] .fx i:nth-child(1) {
-  left: 20%; top: 30%;
-  background: radial-gradient(circle at 35% 35%, color-mix(in srgb, var(--c2) 70%, transparent), color-mix(in srgb, var(--c1) 40%, transparent), transparent);
-  animation: nectarBlob 7s var(--fluid) infinite;
-}
-
-[data-anim="orbs"] .fx i:nth-child(2) {
-  left: 55%; top: 50%;
-  background: radial-gradient(circle at 35% 35%, color-mix(in srgb, var(--c1) 60%, transparent), color-mix(in srgb, var(--c2) 30%, transparent), transparent);
-  animation: nectarBlob 9s var(--fluid) infinite 2s;
-}
-
-[data-anim="orbs"] .fx i:nth-child(3) {
-  left: 40%; top: 70%;
-  background: radial-gradient(circle at 35% 35%, color-mix(in srgb, var(--c2) 50%, transparent), color-mix(in srgb, var(--c1) 25%, transparent), transparent);
-  animation: nectarBlob 8s var(--fluid) infinite 4s;
-}
-
-@keyframes nectarBlob {
-  0% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 0.4; border-radius: 60% 40% 55% 45% / 50% 55% 45% 50%; }
-  25% { transform: translate(15px, -10px) scale(1.3) rotate(45deg); opacity: 0.8; border-radius: 50% 50% 60% 40% / 55% 45% 50% 50%; }
-  50% { transform: translate(-10px, 5px) scale(0.9) rotate(90deg); opacity: 0.6; border-radius: 45% 55% 50% 50% / 50% 50% 45% 55%; }
-  75% { transform: translate(20px, -5px) scale(1.1) rotate(135deg); opacity: 0.7; border-radius: 55% 45% 45% 55% / 45% 55% 50% 50%; }
-  100% { transform: translate(0, 0) scale(1) rotate(180deg); opacity: 0.4; border-radius: 60% 40% 55% 45% / 50% 55% 45% 50%; }
-}
-
-/* 8. SOAP FILM — Bubble Gum: Wobbling organic bubbles */
-[data-anim="bubbles"] .fx i {
-  border-radius: 60% 40% 55% 45% / 50% 55% 45% 50%;
-  border: 1px solid color-mix(in srgb, var(--c2) 40%, transparent);
-  background: radial-gradient(circle at 30% 30%, color-mix(in srgb, var(--c2) 40%, transparent), color-mix(in srgb, var(--c1) 20%, transparent), transparent 70%);
-  filter: blur(0.5px);
-  mix-blend-mode: screen;
-}
-
-[data-anim="bubbles"] .fx i:nth-child(1) { width: 40px; height: 40px; left: 20%; top: 60%; animation: soapFilm 8s var(--fluid) infinite; }
-[data-anim="bubbles"] .fx i:nth-child(2) { width: 25px; height: 25px; left: 55%; top: 35%; animation: soapFilm 10s var(--fluid) infinite 2s; }
-[data-anim="bubbles"] .fx i:nth-child(3) { width: 35px; height: 35px; left: 40%; top: 70%; animation: soapFilm 9s var(--fluid) infinite 4s; }
-
-@keyframes soapFilm {
-  0% { transform: translateY(0) scale(0.8) rotate(0deg); opacity: 0.4; border-radius: 60% 40% 55% 45% / 50% 55% 45% 50%; }
-  25% { transform: translateY(-30px) scale(1.1) rotate(15deg); opacity: 0.8; border-radius: 45% 55% 50% 50% / 55% 45% 50% 50%; }
-  50% { transform: translateY(-15px) scale(0.9) rotate(-10deg); opacity: 0.6; border-radius: 55% 45% 45% 55% / 50% 50% 55% 45%; }
-  75% { transform: translateY(-45px) scale(1.05) rotate(20deg); opacity: 0.7; border-radius: 50% 50% 40% 60% / 45% 55% 50% 50%; }
-  100% { transform: translateY(-60px) scale(0.7) rotate(0deg); opacity: 0; border-radius: 60% 40% 55% 45% / 50% 55% 45% 50%; }
-}
-
-/* 9. GOLDEN HOUR — Horizon: Warm diffused light washes */
-[data-anim="beam"] .fx i {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  filter: blur(8px);
-  mix-blend-mode: screen;
-}
-
-[data-anim="beam"] .fx i:nth-child(1) {
-  background: radial-gradient(circle at 30% 50%, color-mix(in srgb, var(--c2) 35%, transparent), transparent 60%);
-  animation: goldenHour 8s var(--soft) infinite;
-}
-
-[data-anim="beam"] .fx i:nth-child(2) {
-  background: radial-gradient(circle at 70% 40%, color-mix(in srgb, var(--c1) 25%, transparent), transparent 55%);
-  animation: goldenHour 10s var(--soft) infinite 2.5s;
-}
-
-[data-anim="beam"] .fx i:nth-child(3) {
-  background: radial-gradient(circle at 50% 70%, color-mix(in srgb, var(--c2) 20%, transparent), transparent 50%);
-  animation: goldenHour 12s var(--soft) infinite 5s;
-}
-
-@keyframes goldenHour {
-  0% { transform: scale(0.8) translate(0, 0); opacity: 0.3; }
-  40% { transform: scale(1.2) translate(-5%, 3%); opacity: 0.6; }
-  70% { transform: scale(1.0) translate(3%, -2%); opacity: 0.4; }
-  100% { transform: scale(0.8) translate(0, 0); opacity: 0.3; }
-}
-
-/* 10. FLOWER DRIFT — Lavender: Soft petals tumbling */
-[data-anim="petals"] .fx i {
-  width: 20px;
-  height: 20px;
-  border-radius: 80% 20% 80% 20% / 80% 20% 80% 20%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--c1) 60%, transparent), color-mix(in srgb, var(--c2) 30%, transparent), transparent);
-  filter: blur(0.5px);
-  mix-blend-mode: screen;
-}
-
-[data-anim="petals"] .fx i:nth-child(1) { left: 10%; top: 10%; animation: flowerDrift 9s var(--soft) infinite; }
-[data-anim="petals"] .fx i:nth-child(2) { left: 50%; top: 30%; animation: flowerDrift 11s var(--soft) infinite 2s; }
-[data-anim="petals"] .fx i:nth-child(3) { left: 70%; top: 60%; animation: flowerDrift 10s var(--soft) infinite 4s; }
-
-@keyframes flowerDrift {
-  0% { transform: translate(0, 0) rotate(0deg) scale(0.5); opacity: 0; }
-  20% { transform: translate(30px, 20px) rotate(45deg) scale(1); opacity: 0.6; }
-  40% { transform: translate(-15px, 50px) rotate(-30deg) scale(0.8); opacity: 0.5; }
-  60% { transform: translate(45px, 80px) rotate(60deg) scale(1.1); opacity: 0.7; }
-  80% { transform: translate(10px, 120px) rotate(-20deg) scale(0.7); opacity: 0.3; }
-  100% { transform: translate(0, 150px) rotate(0deg) scale(0.4); opacity: 0; }
-}
-
-/* 11. LEATHER WARMTH — New Car: Soft flowing highlight */
-[data-anim="sheen"] .fx i {
-  width: 60%;
-  height: 40%;
-  border-radius: 50%;
-  filter: blur(5px);
-  mix-blend-mode: screen;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--c1) 0%, transparent), color-mix(in srgb, var(--c2) 40%, transparent), color-mix(in srgb, var(--c1) 0%, transparent));
-}
-
-[data-anim="sheen"] .fx i:nth-child(1) { left: 10%; top: 20%; animation: leatherWarmth 7s var(--soft) infinite; }
-[data-anim="sheen"] .fx i:nth-child(2) { left: 40%; top: 45%; animation: leatherWarmth 9s var(--soft) infinite 2s; }
-[data-anim="sheen"] .fx i:nth-child(3) { left: 25%; top: 60%; animation: leatherWarmth 8s var(--soft) infinite 4s; }
-
-@keyframes leatherWarmth {
-  0% { transform: translateX(-10%) translateY(0) scale(1); opacity: 0.3; }
-  30% { transform: translateX(15%) translateY(-5%) scale(1.1); opacity: 0.6; }
-  60% { transform: translateX(-5%) translateY(3%) scale(0.9); opacity: 0.4; }
-  100% { transform: translateX(-10%) translateY(0) scale(1); opacity: 0.3; }
-}
-
-/* 12. CREAM FOLD — Vanilla: Organic conic-gradient spirals */
-[data-anim="swirl"] .fx i {
-  width: 120%;
-  height: 120%;
-  top: -10%;
-  left: -10%;
-  border-radius: 50%;
-  filter: blur(3px);
-  mix-blend-mode: screen;
-}
-
-[data-anim="swirl"] .fx i:nth-child(1) {
-  background: conic-gradient(from 0deg, transparent 0%, color-mix(in srgb, var(--c1) 40%, transparent) 12%, color-mix(in srgb, var(--c2) 30%, transparent) 25%, transparent 37%, color-mix(in srgb, var(--c1) 50%, transparent) 50%, color-mix(in srgb, var(--c2) 20%, transparent) 62%, transparent 75%, color-mix(in srgb, var(--c1) 35%, transparent) 87%, transparent 100%);
-  animation: creamFold 10s var(--fluid) infinite;
-}
-
-[data-anim="swirl"] .fx i:nth-child(2) {
-  background: conic-gradient(from 120deg, transparent 0%, color-mix(in srgb, var(--c2) 50%, transparent) 15%, color-mix(in srgb, var(--c1) 40%, transparent) 30%, transparent 45%, color-mix(in srgb, var(--c2) 45%, transparent) 60%, transparent 75%, color-mix(in srgb, var(--c1) 30%, transparent) 90%, transparent 100%);
-  animation: creamFold 12s var(--fluid) infinite 3s;
-}
-
-[data-anim="swirl"] .fx i:nth-child(3) {
-  background: conic-gradient(from 240deg, transparent 0%, color-mix(in srgb, var(--c2) 35%, transparent) 20%, color-mix(in srgb, var(--c1) 25%, transparent) 40%, transparent 60%, color-mix(in srgb, var(--c2) 30%, transparent) 80%, transparent 100%);
-  animation: creamFold 14s var(--fluid) infinite 6s;
-}
-
-@keyframes creamFold {
-  0% { transform: rotate(0deg) scale(0.8); opacity: 0.3; }
-  40% { transform: rotate(180deg) scale(1.1); opacity: 0.6; }
-  70% { transform: rotate(270deg) scale(0.9); opacity: 0.4; }
-  100% { transform: rotate(360deg) scale(0.8); opacity: 0.3; }
-}
 
 /* ============================================================
    COLLECTIONS
@@ -1207,20 +758,6 @@ h2 em, .story-line em { font-style: italic; color: var(--champagne); }
 .buy-feature .btn { margin-top: 1.8rem; }
 
 /* ============================================================
-   GOLD DUST OVERLAY
-   ============================================================ */
-.gold-dust {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 9990;
-  opacity: 0.03;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 200px 200px;
-}
-
-/* ============================================================
    FOOTER
    ============================================================ */
 .footer {
@@ -1277,11 +814,6 @@ h2 em, .story-line em { font-style: italic; color: var(--champagne); }
   .cat-grid { grid-template-columns: 1fr; max-width: 32rem; }
   .why-grid { grid-template-columns: repeat(2, 1fr); }
   .buy-grid { grid-template-columns: 1fr; }
-  .spotlight-card { grid-template-columns: 1fr; }
-  .spotlight-visual { aspect-ratio: 16 / 9; }
-  .cursor, .cursor-trail { display: none !important; }
-  body { cursor: auto; }
-  a { cursor: pointer; }
 }
 
 @media (max-width: 720px) {
@@ -1332,7 +864,6 @@ h2 em, .story-line em { font-style: italic; color: var(--champagne); }
 
 @media (max-width: 480px) {
   .scent-card { flex: 0 0 85%; }
-  .spotlight-card { padding: 1.8rem; }
   .cat-body { padding: 1.5rem 1.4rem 1.8rem; }
 }
 
@@ -1352,7 +883,4 @@ h2 em, .story-line em { font-style: italic; color: var(--champagne); }
   .scent-card { transform: none !important; }
   #particles { display: none; }
   .story-bg img { transform: none; opacity: 0.35; }
-  .cursor, .cursor-trail { display: none !important; }
-  body { cursor: auto; }
-  a { cursor: pointer; }
 }
