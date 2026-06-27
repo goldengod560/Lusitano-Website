@@ -1,8 +1,6 @@
 /* ============================================================
-   LUSITANO — script.js
-   All animation logic. Everything checks prefers-reduced-motion
-   and falls back gracefully.
-============================================================ */
+   LUSITANO — script.js (FLASHY SHOWCASE EDITION)
+   ============================================================ */
 
 (() => {
   "use strict";
@@ -11,7 +9,87 @@
   const isTouch = window.matchMedia("(hover: none)").matches;
 
   /* ----------------------------------------------------------
-     1. Navigation — glass background on scroll + mobile menu
+     1. Custom cursor + gold trail
+  ---------------------------------------------------------- */
+  if (!isTouch && !reduceMotion) {
+    const cursor = document.createElement("div");
+    cursor.className = "cursor";
+    document.body.appendChild(cursor);
+
+    const trailCount = 8;
+    const trails = [];
+    for (let i = 0; i < trailCount; i++) {
+      const t = document.createElement("div");
+      t.className = "cursor-trail";
+      document.body.appendChild(t);
+      trails.push({ el: t, x: 0, y: 0, active: false });
+    }
+
+    let mouseX = 0, mouseY = 0;
+    let cursorX = 0, cursorY = 0;
+    let trailIdx = 0;
+
+    document.addEventListener("mousemove", (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      // Spawn trail
+      const t = trails[trailIdx];
+      t.x = mouseX; t.y = mouseY; t.active = true;
+      t.el.style.left = mouseX + "px";
+      t.el.style.top = mouseY + "px";
+      t.el.style.opacity = "0.6";
+      trailIdx = (trailIdx + 1) % trailCount;
+    });
+
+    // Animate cursor and trails
+    const animateCursor = () => {
+      cursorX += (mouseX - cursorX) * 0.15;
+      cursorY += (mouseY - cursorY) * 0.15;
+      cursor.style.left = cursorX + "px";
+      cursor.style.top = cursorY + "px";
+
+      for (let i = 0; i < trailCount; i++) {
+        const t = trails[i];
+        if (!t.active) continue;
+        const el = t.el;
+        const currentX = parseFloat(el.style.left || 0);
+        const currentY = parseFloat(el.style.top || 0);
+        const nx = currentX + (t.x - currentX) * 0.2;
+        const ny = currentY + (t.y - currentY) * 0.2;
+        el.style.left = nx + "px";
+        el.style.top = ny + "px";
+        el.style.opacity = Math.max(0, parseFloat(el.style.opacity) - 0.025);
+        if (parseFloat(el.style.opacity) <= 0.01) t.active = false;
+      }
+      requestAnimationFrame(animateCursor);
+    };
+    animateCursor();
+
+    // Hover states
+    document.querySelectorAll("a, button, .scent-card, .cat-card, .why-card, .buy-card, .btn").forEach((el) => {
+      el.addEventListener("mouseenter", () => cursor.classList.add("hovering"));
+      el.addEventListener("mouseleave", () => cursor.classList.remove("hovering"));
+    });
+  }
+
+  /* ----------------------------------------------------------
+     2. Scroll progress bar
+  ---------------------------------------------------------- */
+  const progressBar = document.createElement("div");
+  progressBar.className = "scroll-progress";
+  document.body.prepend(progressBar);
+
+  const updateProgress = () => {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = docHeight > 0 ? scrollTop / docHeight : 0;
+    progressBar.style.transform = `scaleX(${progress})`;
+  };
+  window.addEventListener("scroll", updateProgress, { passive: true });
+  updateProgress();
+
+  /* ----------------------------------------------------------
+     3. Navigation
   ---------------------------------------------------------- */
   const nav = document.getElementById("nav");
   const navToggle = document.getElementById("navToggle");
@@ -26,7 +104,6 @@
     navToggle.classList.toggle("open", open);
     navToggle.setAttribute("aria-expanded", open);
   });
-  // Close mobile menu when a link is tapped
   navLinks.querySelectorAll("a").forEach((a) =>
     a.addEventListener("click", () => {
       navLinks.classList.remove("open");
@@ -36,20 +113,13 @@
   );
 
   /* ----------------------------------------------------------
-     2. (Hero brand mark is now an image — no JS needed)
-  ---------------------------------------------------------- */
-
-  /* ----------------------------------------------------------
-     3. Gold particle field (hero) — lightweight canvas
-        Pauses when the hero is off-screen. Skipped entirely
-        for reduced-motion users.
+     4. Gold particle field (hero)
   ---------------------------------------------------------- */
   const canvas = document.getElementById("particles");
   if (canvas && !reduceMotion) {
     const ctx = canvas.getContext("2d");
     let w, h, dpr, particles, running = true, raf;
-
-    const COUNT = window.innerWidth < 720 ? 22 : 42; // keep it light
+    const COUNT = window.innerWidth < 720 ? 28 : 55;
 
     const resize = () => {
       dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -63,18 +133,18 @@
     const spawn = () => ({
       x: Math.random() * w,
       y: h + Math.random() * h * 0.3,
-      r: 0.6 + Math.random() * 1.6,
-      speed: 0.12 + Math.random() * 0.28,
+      r: 0.6 + Math.random() * 1.8,
+      speed: 0.1 + Math.random() * 0.3,
       sway: Math.random() * Math.PI * 2,
       swaySpeed: 0.002 + Math.random() * 0.004,
-      alpha: 0.15 + Math.random() * 0.4,
+      alpha: 0.15 + Math.random() * 0.45,
     });
 
     const init = () => {
       resize();
       particles = Array.from({ length: COUNT }, () => {
         const p = spawn();
-        p.y = Math.random() * h; // scatter on first load
+        p.y = Math.random() * h;
         return p;
       });
     };
@@ -85,7 +155,7 @@
       for (const p of particles) {
         p.y -= p.speed;
         p.sway += p.swaySpeed;
-        const x = p.x + Math.sin(p.sway) * 18;
+        const x = p.x + Math.sin(p.sway) * 20;
         if (p.y < -10) Object.assign(p, spawn());
         const grad = ctx.createRadialGradient(x, p.y, 0, x, p.y, p.r * 3);
         grad.addColorStop(0, `rgba(232, 213, 168, ${p.alpha})`);
@@ -98,11 +168,8 @@
       raf = requestAnimationFrame(tick);
     };
 
-    init();
-    tick();
-    window.addEventListener("resize", () => { resize(); }, { passive: true });
-
-    // Pause the particle loop when the hero scrolls out of view
+    init(); tick();
+    window.addEventListener("resize", resize, { passive: true });
     new IntersectionObserver(([entry]) => {
       const wasRunning = running;
       running = entry.isIntersecting;
@@ -112,7 +179,7 @@
   }
 
   /* ----------------------------------------------------------
-     4. Scroll-reveal animations
+     5. Scroll-reveal animations
   ---------------------------------------------------------- */
   const revealEls = document.querySelectorAll(".reveal");
   if (reduceMotion) {
@@ -127,13 +194,25 @@
           }
         }
       },
-      { threshold: 0.15, rootMargin: "0px 0px -40px 0px" }
+      { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
     );
     revealEls.forEach((el) => io.observe(el));
   }
 
+  /* Story section parallax zoom */
+  const story = document.querySelector(".story");
+  if (story && !reduceMotion) {
+    const storyIO = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) story.classList.add("in");
+      },
+      { threshold: 0.2 }
+    );
+    storyIO.observe(story);
+  }
+
   /* ----------------------------------------------------------
-     5. Parallax mist layers in the hero
+     6. Parallax mist layers
   ---------------------------------------------------------- */
   const parallaxEls = document.querySelectorAll("[data-parallax]");
   if (parallaxEls.length && !reduceMotion) {
@@ -152,9 +231,7 @@
   }
 
   /* ----------------------------------------------------------
-     6. Scent cards — 3D tilt on desktop, tap-to-awaken on mobile.
-        Each card's scent animation only plays while the card is
-        actually on screen (keeps scrolling smooth on phones).
+     7. Scent cards — 3D tilt + mobile tap fix
   ---------------------------------------------------------- */
   const cards = document.querySelectorAll(".scent-card");
 
@@ -170,13 +247,12 @@
 
   cards.forEach((card) => {
     if (!isTouch && !reduceMotion) {
-      // Subtle 3D tilt following the cursor
       card.addEventListener("pointermove", (e) => {
         const rect = card.getBoundingClientRect();
         const px = (e.clientX - rect.left) / rect.width - 0.5;
         const py = (e.clientY - rect.top) / rect.height - 0.5;
-        card.style.setProperty("--ry", `${px * 7}deg`);
-        card.style.setProperty("--rx", `${py * -7}deg`);
+        card.style.setProperty("--ry", `${px * 8}deg`);
+        card.style.setProperty("--rx", `${py * -8}deg`);
       });
       card.addEventListener("pointerleave", () => {
         card.style.setProperty("--ry", "0deg");
@@ -184,7 +260,6 @@
       });
     }
 
-    // Tap toggles the aura on touch devices (only one card active at a time)
     card.addEventListener("click", () => {
       if (!isTouch) return;
       const wasActive = card.classList.contains("active");
@@ -194,7 +269,7 @@
   });
 
   /* ----------------------------------------------------------
-     7. Magnetic buttons — buttons lean gently toward the cursor
+     8. Magnetic buttons
   ---------------------------------------------------------- */
   if (!isTouch && !reduceMotion) {
     document.querySelectorAll(".magnetic").forEach((btn) => {
@@ -202,7 +277,7 @@
         const rect = btn.getBoundingClientRect();
         const x = e.clientX - rect.left - rect.width / 2;
         const y = e.clientY - rect.top - rect.height / 2;
-        btn.style.transform = `translate(${x * 0.18}px, ${y * 0.28}px)`;
+        btn.style.transform = `translate(${x * 0.2}px, ${y * 0.3}px)`;
       });
       btn.addEventListener("pointerleave", () => {
         btn.style.transform = "translate(0, 0)";
@@ -211,16 +286,14 @@
   }
 
   /* ----------------------------------------------------------
-     8. Missing-image fallback — if a category photo isn't there
-        yet, hide the <img> so the styled gradient panel shows
-        instead of a broken-image icon.
+     9. Missing-image fallback
   ---------------------------------------------------------- */
-  document.querySelectorAll(".cat-visual img").forEach((img) => {
+  document.querySelectorAll(".cat-visual img, .spotlight-visual img, .story-bg img").forEach((img) => {
     img.addEventListener("error", () => { img.style.display = "none"; });
   });
 
   /* ----------------------------------------------------------
-     9. Footer year
+     10. Footer year
   ---------------------------------------------------------- */
   const yearEl = document.getElementById("year");
   if (yearEl) yearEl.textContent = new Date().getFullYear();
