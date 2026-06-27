@@ -16,7 +16,7 @@
     cursor.className = "cursor";
     document.body.appendChild(cursor);
 
-    const trailCount = 8;
+    const trailCount = 5;
     const trails = [];
     for (let i = 0; i < trailCount; i++) {
       const t = document.createElement("div");
@@ -34,17 +34,17 @@
       mouseY = e.clientY;
       // Spawn trail
       const t = trails[trailIdx];
-      t.x = mouseX; t.y = mouseY; t.active = true;
-      t.el.style.left = mouseX + "px";
-      t.el.style.top = mouseY + "px";
+      t.x = cursorX; t.y = cursorY; t.active = true;
+      t.el.style.left = cursorX + "px";
+      t.el.style.top = cursorY + "px";
       t.el.style.opacity = "0.6";
       trailIdx = (trailIdx + 1) % trailCount;
     });
 
     // Animate cursor and trails
     const animateCursor = () => {
-      cursorX += (mouseX - cursorX) * 0.15;
-      cursorY += (mouseY - cursorY) * 0.15;
+      cursorX += (mouseX - cursorX) * 0.45;
+      cursorY += (mouseY - cursorY) * 0.45;
       cursor.style.left = cursorX + "px";
       cursor.style.top = cursorY + "px";
 
@@ -54,11 +54,11 @@
         const el = t.el;
         const currentX = parseFloat(el.style.left || 0);
         const currentY = parseFloat(el.style.top || 0);
-        const nx = currentX + (t.x - currentX) * 0.2;
-        const ny = currentY + (t.y - currentY) * 0.2;
+        const nx = currentX + (t.x - currentX) * 0.6;
+        const ny = currentY + (t.y - currentY) * 0.6;
         el.style.left = nx + "px";
         el.style.top = ny + "px";
-        el.style.opacity = Math.max(0, parseFloat(el.style.opacity) - 0.025);
+        el.style.opacity = Math.max(0, parseFloat(el.style.opacity) - 0.04);
         if (parseFloat(el.style.opacity) <= 0.01) t.active = false;
       }
       requestAnimationFrame(animateCursor);
