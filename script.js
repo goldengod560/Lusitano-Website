@@ -22,44 +22,39 @@
       const t = document.createElement("div");
       t.className = "cursor-trail";
       document.body.appendChild(t);
-      trails.push({ el: t, x: 0, y: 0, active: false });
+      trails.push({ el: t });
     }
 
     let mouseX = 0, mouseY = 0;
     let cursorX = 0, cursorY = 0;
-    let trailIdx = 0;
 
     document.addEventListener("mousemove", (e) => {
       mouseX = e.clientX;
       mouseY = e.clientY;
-      // Spawn trail
-      const t = trails[trailIdx];
-      t.x = cursorX; t.y = cursorY; t.active = true;
-      t.el.style.left = cursorX + "px";
-      t.el.style.top = cursorY + "px";
-      t.el.style.opacity = "0.6";
-      trailIdx = (trailIdx + 1) % trailCount;
     });
 
     // Animate cursor and trails
     const animateCursor = () => {
-      cursorX += (mouseX - cursorX) * 0.45;
-      cursorY += (mouseY - cursorY) * 0.45;
+      // Cursor snaps to mouse quickly
+      cursorX += (mouseX - cursorX) * 0.7;
+      cursorY += (mouseY - cursorY) * 0.7;
       cursor.style.left = cursorX + "px";
       cursor.style.top = cursorY + "px";
 
+      // Trail dots follow in a chain behind the cursor
+      let targetX = cursorX;
+      let targetY = cursorY;
       for (let i = 0; i < trailCount; i++) {
-        const t = trails[i];
-        if (!t.active) continue;
-        const el = t.el;
-        const currentX = parseFloat(el.style.left || 0);
-        const currentY = parseFloat(el.style.top || 0);
-        const nx = currentX + (t.x - currentX) * 0.6;
-        const ny = currentY + (t.y - currentY) * 0.6;
+        const el = trails[i].el;
+        const currentX = parseFloat(el.style.left || targetX);
+        const currentY = parseFloat(el.style.top || targetY);
+        const nx = currentX + (targetX - currentX) * 0.35;
+        const ny = currentY + (targetY - currentY) * 0.35;
         el.style.left = nx + "px";
         el.style.top = ny + "px";
-        el.style.opacity = Math.max(0, parseFloat(el.style.opacity) - 0.04);
-        if (parseFloat(el.style.opacity) <= 0.01) t.active = false;
+        el.style.opacity = String(0.5 - i * 0.1);
+        targetX = nx;
+        targetY = ny;
       }
       requestAnimationFrame(animateCursor);
     };
