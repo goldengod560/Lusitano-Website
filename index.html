@@ -205,6 +205,13 @@ nav.scrolled{padding:14px 40px;background:rgba(11,8,5,.92);border-bottom:1px sol
   75%{transform:translateY(-12%) translateX(-8%) scale(1.15);opacity:.6}
 }
 @media(prefers-reduced-motion:reduce){.scent::before,.scent::after{animation:none;opacity:.25}}
+/* Black Diamond — diamond dust */
+.dspark{position:absolute;left:var(--dx);top:var(--dy);width:2px;height:2px;border-radius:50%;
+  background:#eef;box-shadow:0 0 3px .5px rgba(238,238,248,.55);
+  z-index:1;pointer-events:none;opacity:0;transform:scale(.4);
+  animation:dtwinkle 3.2s ease-in-out infinite;animation-delay:var(--dd)}
+@keyframes dtwinkle{0%,100%{opacity:0;transform:scale(.35)}50%{opacity:.9;transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){.dspark{animation:none;opacity:.45;transform:scale(.7)}}
 .scent:hover{border-color:var(--gold);transform:translateY(-5px)}
 .scent .dot{width:34px;height:34px;border-radius:50%;margin-bottom:18px}
 .scent h4{font-family:var(--serif);font-size:1.3rem;font-weight:500;margin-bottom:6px}
@@ -450,7 +457,7 @@ footer{padding:70px 0 40px;border-top:1px solid var(--line);text-align:center}
       <div class="scent-group-head"><span class="sg-label">For the Car</span><span class="scent-hint">Swipe →</span><span class="sg-count">14 Scents</span></div>
       <div class="scents">
         <div class="scent" style="--s1:#bfe3f5;--s2:#4a86b8"><div class="dot" style="background:linear-gradient(135deg,#bfe3f5,#4a86b8)"></div><h4>Cold Water</h4><span>Crisp · Aquatic · Cool</span></div>
-        <div class="scent" style="--s1:#5a5a66;--s2:#15151c"><div class="dot" style="background:linear-gradient(135deg,#5a5a66,#15151c)"></div><h4>Black Diamond</h4><span>Dark · Bold · Refined</span></div>
+        <div class="scent diamond" style="--s1:#5a5a66;--s2:#15151c"><i class="dspark" style="--dx:16%;--dy:22%;--dd:0s"></i><i class="dspark" style="--dx:74%;--dy:16%;--dd:.7s"></i><i class="dspark" style="--dx:58%;--dy:46%;--dd:1.3s"></i><i class="dspark" style="--dx:30%;--dy:64%;--dd:.4s"></i><i class="dspark" style="--dx:84%;--dy:70%;--dd:1.8s"></i><i class="dspark" style="--dx:44%;--dy:12%;--dd:2.2s"></i><div class="dot" style="background:linear-gradient(135deg,#5a5a66,#15151c)"></div><h4>Black Diamond</h4><span>Dark · Bold · Refined</span></div>
         <div class="scent" style="--s1:#d9a36a;--s2:#6e3f1c"><div class="dot" style="background:linear-gradient(135deg,#d9a36a,#6e3f1c)"></div><h4>Egyptian Musk</h4><span>Warm · Sensual · Musky</span></div>
         <div class="scent" style="--s1:#d9b3c4;--s2:#8a5c74"><div class="dot" style="background:linear-gradient(135deg,#d9b3c4,#8a5c74)"></div><h4>Memories</h4><span>Soft · Powdery · Nostalgic</span></div>
         <div class="scent" style="--s1:#eef3f7;--s2:#b9c6d4"><div class="dot" style="background:linear-gradient(135deg,#eef3f7,#b9c6d4)"></div><h4>Baby Powder</h4><span>Clean · Soft · Tender</span></div>
@@ -565,8 +572,9 @@ document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 
   const particles = [];
   const mobile = matchMedia('(max-width:760px)').matches;
-  const MAX = mobile ? 35 : 130;
-  const ALPHA = mobile ? 0.07 : 0.16;
+  const MAX_BASE = mobile ? 35 : 130;
+  const ALPHA_BASE = mobile ? 0.07 : 0.16;
+  let MAX = MAX_BASE, ALPHA = ALPHA_BASE;
   function spawn(n){
     for(let i=0; i<n && particles.length<MAX; i++){
       particles.push({
@@ -592,13 +600,21 @@ document.querySelectorAll('.reveal').forEach(el => io.observe(el));
     h = h.replace('#','');
     return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
   }
+  let diamond = 0, diamondTarget = 0;
   function setTintFromCard(card){
+    if(card.classList.contains('diamond')){
+      // Black Diamond: silver diamond-dust atmosphere instead of near-black
+      tintTarget = [[236,236,246],[188,188,204]];
+      diamondTarget = 1;
+      return;
+    }
+    diamondTarget = 0;
     const s = getComputedStyle(card);
     const c1 = s.getPropertyValue('--s1').trim();
     const c2 = s.getPropertyValue('--s2').trim();
     if(c1 && c2){ tintTarget = [hexToRgb(c1), hexToRgb(c2)]; }
   }
-  function resetTint(){ tintTarget = TINT_DEFAULT.map(c => c.slice()); }
+  function resetTint(){ tintTarget = TINT_DEFAULT.map(c => c.slice()); diamondTarget = 0; }
 
   // boost the atmosphere while the scent library is on screen
   let boost = 0, boostTarget = 0;
@@ -621,6 +637,7 @@ document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 
   // ambient gold dust (desktop only) — tiny drifting specks that twinkle
   const dust = [];
+  const sparks = [];
   if(!mobile && !reduce){
     for(let i=0; i<26; i++){
       dust.push({
@@ -629,6 +646,17 @@ document.querySelectorAll('.reveal').forEach(el => io.observe(el));
         vy: -(0.06 + Math.random()*0.12) * dpr,
         vx: (Math.random()-0.5) * 0.08 * dpr,
         tw: Math.random()*6.28, tws: 0.008 + Math.random()*0.018
+      });
+    }
+    // diamond dust: sharper, brighter specks with cross flare (only visible in diamond mode)
+    for(let i=0; i<18; i++){
+      sparks.push({
+        x: Math.random()*W, y: Math.random()*H,
+        r: (0.8 + Math.random()*1.1) * dpr,
+        vy: -(0.05 + Math.random()*0.1) * dpr,
+        vx: (Math.random()-0.5) * 0.06 * dpr,
+        tw: Math.random()*6.28, tws: 0.02 + Math.random()*0.04,
+        flare: (4 + Math.random()*5) * dpr
       });
     }
   }
@@ -655,8 +683,13 @@ document.querySelectorAll('.reveal').forEach(el => io.observe(el));
   function frame(){
     tintStep();
     boost += (boostTarget - boost) * 0.03;
+    diamond += (diamondTarget - diamond) * 0.06;
+    MAX = Math.round(MAX_BASE * (1 + boost * (mobile ? 0.3 : 0.5)));
+    ALPHA = ALPHA_BASE * (1 + boost * 0.25);
     // in the scent section, mist releases on its own (no scrolling needed)
-    if(!reduce && boost > 0.3 && Math.random() < 0.022 * boost) spawn(1);
+    if(!reduce && boost > 0.3){
+      if(Math.random() < 0.05 * boost) spawn(1);
+    }
     const h0 = rgb(0), h1 = rgb(1);
     ctx.clearRect(0, 0, W, H);
     ctx.globalCompositeOperation = 'lighter';
@@ -679,10 +712,23 @@ document.querySelectorAll('.reveal').forEach(el => io.observe(el));
       d.x += d.vx; d.y += d.vy;
       if(d.y < -4){ d.y = H + 4; d.x = Math.random()*W; }
       if(d.x < -4) d.x = W + 4; else if(d.x > W + 4) d.x = -4;
-      const a = (0.10 + Math.sin(d.tw) * 0.09) * (1 + boost * 0.9);
+      const a = (0.10 + Math.sin(d.tw) * 0.09) * (1 + boost * 0.7);
       if(a <= 0.01) continue;
       ctx.fillStyle = `rgba(${h0},${a})`;
       ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, 6.3); ctx.fill();
+    }
+    if(diamond > 0.02){
+      for(const s of sparks){
+        s.tw += s.tws;
+        s.x += s.vx; s.y += s.vy;
+        if(s.y < -8){ s.y = H + 8; s.x = Math.random()*W; }
+        if(s.x < -8) s.x = W + 8; else if(s.x > W + 8) s.x = -8;
+        const twk = Math.max(0, Math.sin(s.tw));
+        const a = twk * twk * 0.5 * diamond;
+        if(a <= 0.02) continue;
+        ctx.fillStyle = `rgba(245,245,252,${a})`;
+        ctx.beginPath(); ctx.arc(s.x, s.y, s.r * 0.75, 0, 6.3); ctx.fill();
+      }
     }
     ctx.globalCompositeOperation = 'source-over';
     requestAnimationFrame(frame);
