@@ -579,10 +579,45 @@ document.querySelectorAll('.reveal').forEach(el => io.observe(el));
         decay: 0.0035 + Math.random()*0.004,
         phase: Math.random()*6.28,
         curl: (0.4 + Math.random()*0.5) * dpr,
-        hue: Math.random() < 0.5 ? '246,220,160' : '227,189,114'
+        hue: Math.random() < 0.5 ? 0 : 1
       });
     }
   }
+
+  // ===== live tint: background champagne effect follows hovered scent =====
+  const TINT_DEFAULT = [[246,220,160],[227,189,114]];
+  let tint = [[246,220,160],[227,189,114]];
+  let tintTarget = [[246,220,160],[227,189,114]];
+  function hexToRgb(h){
+    h = h.replace('#','');
+    return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
+  }
+  function setTintFromCard(card){
+    const s = getComputedStyle(card);
+    const c1 = s.getPropertyValue('--s1').trim();
+    const c2 = s.getPropertyValue('--s2').trim();
+    if(c1 && c2){ tintTarget = [hexToRgb(c1), hexToRgb(c2)]; }
+  }
+  function resetTint(){ tintTarget = TINT_DEFAULT.map(c => c.slice()); }
+
+  // boost the atmosphere while the scent library is on screen
+  let boost = 0, boostTarget = 0;
+  const scentsSection = document.getElementById('scents');
+  if(scentsSection){
+    new IntersectionObserver((entries) => {
+      entries.forEach(e => { boostTarget = e.isIntersecting ? 1 : 0; });
+    }, {threshold: 0.12}).observe(scentsSection);
+  }
+  document.querySelectorAll('.scent').forEach(card => {
+    card.addEventListener('pointerenter', () => { setTintFromCard(card); if(!reduce) spawn(mobile ? 2 : 4); });
+    card.addEventListener('pointerleave', resetTint);
+  });
+  function tintStep(){
+    for(let s=0;s<2;s++) for(let c=0;c<3;c++){
+      tint[s][c] += (tintTarget[s][c] - tint[s][c]) * 0.05;
+    }
+  }
+  const rgb = s => `${Math.round(tint[s][0])},${Math.round(tint[s][1])},${Math.round(tint[s][2])}`;
 
   // ambient gold dust (desktop only) — tiny drifting specks that twinkle
   const dust = [];
@@ -618,6 +653,11 @@ document.querySelectorAll('.reveal').forEach(el => io.observe(el));
   }, {passive:true});
 
   function frame(){
+    tintStep();
+    boost += (boostTarget - boost) * 0.03;
+    // in the scent section, mist releases on its own (no scrolling needed)
+    if(!reduce && boost > 0.3 && Math.random() < 0.022 * boost) spawn(1);
+    const h0 = rgb(0), h1 = rgb(1);
     ctx.clearRect(0, 0, W, H);
     ctx.globalCompositeOperation = 'lighter';
     for(let i=particles.length-1; i>=0; i--){
@@ -627,9 +667,10 @@ document.querySelectorAll('.reveal').forEach(el => io.observe(el));
       p.y += p.vy; p.vy *= 0.996; p.r *= 1.004; p.life -= p.decay;
       if(p.life <= 0){ particles.splice(i,1); continue; }
       const a = Math.sin(p.life * Math.PI) * ALPHA;
+      const hue = p.hue === 0 ? h0 : h1;
       const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r);
-      g.addColorStop(0, `rgba(${p.hue},${a})`);
-      g.addColorStop(1, `rgba(${p.hue},0)`);
+      g.addColorStop(0, `rgba(${hue},${a})`);
+      g.addColorStop(1, `rgba(${hue},0)`);
       ctx.fillStyle = g;
       ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.3); ctx.fill();
     }
@@ -638,9 +679,9 @@ document.querySelectorAll('.reveal').forEach(el => io.observe(el));
       d.x += d.vx; d.y += d.vy;
       if(d.y < -4){ d.y = H + 4; d.x = Math.random()*W; }
       if(d.x < -4) d.x = W + 4; else if(d.x > W + 4) d.x = -4;
-      const a = 0.10 + Math.sin(d.tw) * 0.09;
+      const a = (0.10 + Math.sin(d.tw) * 0.09) * (1 + boost * 0.9);
       if(a <= 0.01) continue;
-      ctx.fillStyle = `rgba(246,220,160,${a})`;
+      ctx.fillStyle = `rgba(${h0},${a})`;
       ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, 6.3); ctx.fill();
     }
     ctx.globalCompositeOperation = 'source-over';
