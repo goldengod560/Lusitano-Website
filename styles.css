@@ -271,7 +271,7 @@ p{text-wrap:pretty}
 .labels li{display:flex}
 .labels{--row:276px;--rail:14px;grid-auto-rows:var(--row);row-gap:calc(var(--rail) + 14px);
   background:linear-gradient(180deg,transparent 0 var(--row),#7d3a24 var(--row),#5b2717 calc(var(--row) + var(--rail) * .55),#3e1a0f calc(var(--row) + var(--rail)),transparent calc(var(--row) + var(--rail))) 0 0/100% calc(var(--row) + var(--rail) + 14px) repeat-y;
-  margin:0 calc(var(--gutter) * -.5);padding:0 calc(var(--gutter) * .5)}
+  margin:0 calc(var(--gutter) * -.5);padding:0 calc(var(--gutter) * .5) var(--rail)}
 .labels li:nth-child(3n+2) .scent{-webkit-mask:none;mask:none;border-radius:16px}
 .labels li:nth-child(3n+2) .scent::before{border-radius:11px}
 .labels li:nth-child(3n+2) .scent::after{border-radius:8px}
