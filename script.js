@@ -1,231 +1,184 @@
-/* ============================================================
-   LUSITANO — script.js (FLASHY SHOWCASE EDITION)
-   ============================================================ */
+/* Lusitano — shared behaviour for all pages. Every block checks its elements exist. */
+(function () {
+  'use strict';
+  var doc = document.documentElement;
 
-(() => {
-  "use strict";
+  /* year */
+  document.querySelectorAll('[data-year]').forEach(function (el) { el.textContent = new Date().getFullYear(); });
 
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const isTouch = window.matchMedia("(hover: none)").matches;
-
-  /* ----------------------------------------------------------
-     1. Scroll progress bar
-  ---------------------------------------------------------- */
-  const progressBar = document.createElement("div");
-  progressBar.className = "scroll-progress";
-  document.body.prepend(progressBar);
-
-  const updateProgress = () => {
-    const scrollTop = window.scrollY;
-    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-    const progress = docHeight > 0 ? scrollTop / docHeight : 0;
-    progressBar.style.transform = `scaleX(${progress})`;
-  };
-  window.addEventListener("scroll", updateProgress, { passive: true });
-  updateProgress();
-
-  /* ----------------------------------------------------------
-     2. Navigation
-  ---------------------------------------------------------- */
-  const nav = document.getElementById("nav");
-  const navToggle = document.getElementById("navToggle");
-  const navLinks = document.getElementById("navLinks");
-
-  const onScrollNav = () => nav.classList.toggle("scrolled", window.scrollY > 40);
-  window.addEventListener("scroll", onScrollNav, { passive: true });
-  onScrollNav();
-
-  navToggle.addEventListener("click", () => {
-    const open = navLinks.classList.toggle("open");
-    navToggle.classList.toggle("open", open);
-    navToggle.setAttribute("aria-expanded", open);
-  });
-  navLinks.querySelectorAll("a").forEach((a) =>
-    a.addEventListener("click", () => {
-      navLinks.classList.remove("open");
-      navToggle.classList.remove("open");
-      navToggle.setAttribute("aria-expanded", "false");
-    })
-  );
-
-  /* ----------------------------------------------------------
-     3. Gold particle field (hero)
-  ---------------------------------------------------------- */
-  const canvas = document.getElementById("particles");
-  if (canvas && !reduceMotion) {
-    const ctx = canvas.getContext("2d");
-    let w, h, dpr, particles, running = true, raf;
-    const COUNT = window.innerWidth < 720 ? 28 : 55;
-
-    const resize = () => {
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
-      w = canvas.offsetWidth;
-      h = canvas.offsetHeight;
-      canvas.width = w * dpr;
-      canvas.height = h * dpr;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    };
-
-    const spawn = () => ({
-      x: Math.random() * w,
-      y: h + Math.random() * h * 0.3,
-      r: 0.6 + Math.random() * 1.8,
-      speed: 0.1 + Math.random() * 0.3,
-      sway: Math.random() * Math.PI * 2,
-      swaySpeed: 0.002 + Math.random() * 0.004,
-      alpha: 0.15 + Math.random() * 0.45,
+  /* ---------- mobile menu ---------- */
+  var menuBtn = document.querySelector('.menu-btn');
+  var nav = document.getElementById('site-nav');
+  var scrim = document.querySelector('.scrim');
+  var closeBtn = document.querySelector('.menu-close');
+  function setMenu(open) {
+    if (!menuBtn) return;
+    doc.classList.toggle('menu-open', open);
+    document.body.classList.toggle('menu-open', open);
+    menuBtn.setAttribute('aria-expanded', String(open));
+    if (open) { var first = nav.querySelector('a'); if (first) first.focus(); }
+    else menuBtn.focus({ preventScroll: true });
+  }
+  if (menuBtn && nav) {
+    menuBtn.addEventListener('click', function () { setMenu(menuBtn.getAttribute('aria-expanded') !== 'true'); });
+    if (closeBtn) closeBtn.addEventListener('click', function () { setMenu(false); });
+    if (scrim) scrim.addEventListener('click', function () { setMenu(false); });
+    nav.querySelectorAll('a').forEach(function (a) {
+      a.addEventListener('click', function () { if (doc.classList.contains('menu-open')) setMenu(false); });
     });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && doc.classList.contains('menu-open')) setMenu(false);
+    });
+  }
 
-    const init = () => {
-      resize();
-      particles = Array.from({ length: COUNT }, () => {
-        const p = spawn();
-        p.y = Math.random() * h;
-        return p;
-      });
-    };
+  /* ---------- shelf tabs ---------- */
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('[role="tab"]'));
+  function selectTab(name, focus) {
+    tabs.forEach(function (t) {
+      var on = t.dataset.tab === name;
+      t.setAttribute('aria-selected', String(on));
+      t.tabIndex = on ? 0 : -1;
+      var panel = document.getElementById(t.getAttribute('aria-controls'));
+      if (panel) panel.hidden = !on;
+      if (on && focus) t.focus();
+    });
+  }
+  tabs.forEach(function (t, i) {
+    t.addEventListener('click', function () { selectTab(t.dataset.tab); });
+    t.addEventListener('keydown', function (e) {
+      var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+      if (!d) return;
+      e.preventDefault();
+      selectTab(tabs[(i + d + tabs.length) % tabs.length].dataset.tab, true);
+    });
+  });
+  /* window tags open the matching shelf */
+  document.querySelectorAll('a.tag[data-tab]').forEach(function (a) {
+    a.addEventListener('click', function () { if (tabs.length) selectTab(a.dataset.tab); });
+  });
 
-    const tick = () => {
-      if (!running) return;
-      ctx.clearRect(0, 0, w, h);
-      for (const p of particles) {
-        p.y -= p.speed;
-        p.sway += p.swaySpeed;
-        const x = p.x + Math.sin(p.sway) * 20;
-        if (p.y < -10) Object.assign(p, spawn());
-        const grad = ctx.createRadialGradient(x, p.y, 0, x, p.y, p.r * 3);
-        grad.addColorStop(0, `rgba(232, 213, 168, ${p.alpha})`);
-        grad.addColorStop(1, "rgba(232, 213, 168, 0)");
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.arc(x, p.y, p.r * 3, 0, Math.PI * 2);
-        ctx.fill();
+  /* ---------- counter slip ---------- */
+  var slipEl = document.querySelector('[data-slip]');
+  if (!slipEl) return;
+  var KEY = 'lusitano-slip';
+  var list = slipEl.querySelector('[data-slip-list]');
+  var summary = slipEl.querySelector('[data-slip-summary]');
+  var status = slipEl.querySelector('.slip-status');
+  var toggle = slipEl.querySelector('.slip-toggle');
+  var labels = Array.prototype.slice.call(document.querySelectorAll('.scent[data-scent]'));
+  var items = [];
+
+  function load() {
+    try { var v = JSON.parse(localStorage.getItem(KEY) || '[]'); if (Array.isArray(v)) items = v.filter(function (x) { return x && x.name && x.fmt; }); }
+    catch (e) { items = []; }
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(items)); } catch (e) { /* private mode: keep in memory */ } }
+  function keyOf(x) { return x.name + '|' + x.fmt; }
+  function has(x) { return items.some(function (y) { return keyOf(y) === keyOf(x); }); }
+
+  function render() {
+    var n = items.length;
+    doc.classList.toggle('has-slip', n > 0);
+    document.querySelectorAll('[data-slip-count]').forEach(function (el) { el.textContent = n; });
+    document.querySelectorAll('[data-slip-cta]').forEach(function (el) { el.textContent = n ? 'Your slip: ' + n + (n === 1 ? ' scent' : ' scents') : 'Start your slip'; });
+    summary.textContent = n + (n === 1 ? ' scent' : ' scents');
+    list.innerHTML = '';
+    items.forEach(function (x) {
+      var li = document.createElement('li');
+      var t = document.createElement('div');
+      t.innerHTML = '<b></b><span></span>';
+      t.firstChild.textContent = 'Lusitano ' + x.name;
+      t.lastChild.textContent = x.fmt;
+      var rm = document.createElement('button');
+      rm.type = 'button';
+      rm.setAttribute('aria-label', 'Remove ' + x.name + ' ' + x.fmt.toLowerCase());
+      rm.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+      rm.addEventListener('click', function () { remove(x); });
+      li.appendChild(t); li.appendChild(rm);
+      list.appendChild(li);
+    });
+    labels.forEach(function (b) {
+      b.setAttribute('aria-pressed', String(has({ name: b.dataset.scent, fmt: b.dataset.fmt })));
+    });
+  }
+  function add(x) { if (!has(x)) items.push(x); save(); render(); say(x.name + ' added to your slip'); }
+  function remove(x) { items = items.filter(function (y) { return keyOf(y) !== keyOf(x); }); save(); render(); say(x.name + ' removed'); }
+  function say(msg) { if (status) { status.textContent = msg; clearTimeout(say.t); say.t = setTimeout(function () { status.textContent = ''; }, 2600); } }
+
+  labels.forEach(function (b) {
+    b.addEventListener('click', function () {
+      var x = { name: b.dataset.scent, fmt: b.dataset.fmt };
+      if (has(x)) remove(x);
+      else { add(x); setMin(small()); }
+    });
+  });
+  function small() { return window.matchMedia('(max-width: 600px)').matches; }
+  function setMin(min) {
+    slipEl.classList.toggle('min', min);
+    toggle.setAttribute('aria-expanded', String(!min));
+    toggle.setAttribute('aria-label', min ? 'Expand slip' : 'Collapse slip');
+  }
+  toggle.addEventListener('click', function () { setMin(!slipEl.classList.contains('min')); });
+  document.querySelectorAll('[data-open-slip]').forEach(function (b) {
+    b.addEventListener('click', function () { setMin(false); toggle.focus(); });
+  });
+  document.querySelectorAll('[data-start-slip]').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      if (items.length) { e.preventDefault(); setMin(false); toggle.focus(); }
+    });
+  });
+  slipEl.querySelector('[data-slip-clear]').addEventListener('click', function () { items = []; save(); render(); });
+  slipEl.querySelector('[data-slip-share]').addEventListener('click', function () {
+    var text = 'My Lusitano list:\n' + items.map(function (x) { return '• ' + x.name + ' (' + x.fmt.toLowerCase() + ')'; }).join('\n');
+    if (navigator.share) {
+      navigator.share({ title: 'My Lusitano list', text: text }).catch(function () {});
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(function () { say('List copied. Paste it into a text or note.'); }, function () { say('Could not copy. Take a screenshot instead.'); });
+    } else { say('Take a screenshot of this slip to keep it.'); }
+  });
+
+  load(); render(); setMin(small());
+})();
+
+/* ---------- wholesale form ---------- */
+(function () {
+  'use strict';
+  var form = document.getElementById('wsForm');
+  if (!form) return;
+  var docs = document.getElementById('docs');
+  var files = document.getElementById('dzFiles');
+  var note = form.querySelector('.form-note');
+  var noteDefault = note ? note.textContent : '';
+  var MAX_TOTAL = 10 * 1024 * 1024; // FormSubmit free limit: 10MB total
+  var DEFAULT_FILES = files ? files.textContent : '';
+  function mb(n) { return (n / 1048576).toFixed(1) + ' MB'; }
+  if (docs) {
+    docs.addEventListener('change', function () {
+      var list = Array.prototype.slice.call(docs.files);
+      var total = list.reduce(function (s, f) { return s + f.size; }, 0);
+      files.textContent = list.length ? list.map(function (f) { return f.name; }).join(', ') + ' (' + mb(total) + ')' : DEFAULT_FILES;
+      if (note) { note.classList.toggle('bad', total > MAX_TOTAL); note.textContent = total > MAX_TOTAL ? 'Those files add up to ' + mb(total) + '. Keep the total under 10 MB, or leave them off and we will ask for them by email.' : noteDefault; }
+    });
+  }
+  form.addEventListener('submit', function (e) {
+    if (docs && docs.files.length) {
+      var total = 0;
+      for (var i = 0; i < docs.files.length; i++) total += docs.files[i].size;
+      if (total > MAX_TOTAL) {
+        e.preventDefault();
+        if (note) { note.classList.add('bad'); note.textContent = 'Those files add up to ' + mb(total) + '. Keep the total under 10 MB, or leave them off and we will ask for them by email.'; }
+        docs.focus();
+        return;
       }
-      raf = requestAnimationFrame(tick);
-    };
-
-    init(); tick();
-    window.addEventListener("resize", resize, { passive: true });
-    new IntersectionObserver(([entry]) => {
-      const wasRunning = running;
-      running = entry.isIntersecting;
-      if (running && !wasRunning) tick();
-      else if (!running) cancelAnimationFrame(raf);
-    }).observe(canvas);
-  }
-
-  /* ----------------------------------------------------------
-     4. Scroll-reveal animations
-  ---------------------------------------------------------- */
-  const revealEls = document.querySelectorAll(".reveal");
-  if (reduceMotion) {
-    revealEls.forEach((el) => el.classList.add("in"));
-  } else {
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) {
-            e.target.classList.add("in");
-            io.unobserve(e.target);
-          }
-        }
-      },
-      { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
-    );
-    revealEls.forEach((el) => io.observe(el));
-  }
-
-  const story = document.querySelector(".story");
-  if (story && !reduceMotion) {
-    const storyIO = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) story.classList.add("in"); },
-      { threshold: 0.2 }
-    );
-    storyIO.observe(story);
-  }
-
-  /* ----------------------------------------------------------
-     5. Parallax mist layers
-  ---------------------------------------------------------- */
-  const parallaxEls = document.querySelectorAll("[data-parallax]");
-  if (parallaxEls.length && !reduceMotion) {
-    let ticking = false;
-    const update = () => {
-      const y = window.scrollY;
-      parallaxEls.forEach((el) => {
-        const speed = parseFloat(el.dataset.parallax);
-        el.style.translate = `0 ${y * speed}px`;
-      });
-      ticking = false;
-    };
-    window.addEventListener("scroll", () => {
-      if (!ticking) { requestAnimationFrame(update); ticking = true; }
-    }, { passive: true });
-  }
-
-  /* ----------------------------------------------------------
-     6. Scent cards — 3D tilt + mobile tap fix
-  ---------------------------------------------------------- */
-  const cards = document.querySelectorAll(".scent-card");
-
-  if (!reduceMotion) {
-    const cardIO = new IntersectionObserver(
-      (entries) => { for (const e of entries) e.target.classList.toggle("inview", e.isIntersecting); },
-      { rootMargin: "60px" }
-    );
-    cards.forEach((c) => cardIO.observe(c));
-  }
-
-  cards.forEach((card) => {
-    if (!isTouch && !reduceMotion) {
-      card.addEventListener("pointermove", (e) => {
-        const rect = card.getBoundingClientRect();
-        const px = (e.clientX - rect.left) / rect.width - 0.5;
-        const py = (e.clientY - rect.top) / rect.height - 0.5;
-        card.style.setProperty("--ry", `${px * 8}deg`);
-        card.style.setProperty("--rx", `${py * -8}deg`);
-      });
-      card.addEventListener("pointerleave", () => {
-        card.style.setProperty("--ry", "0deg");
-        card.style.setProperty("--rx", "0deg");
-      });
     }
-
-    card.addEventListener("click", () => {
-      if (!isTouch) return;
-      const wasActive = card.classList.contains("active");
-      cards.forEach((c) => c.classList.remove("active"));
-      if (!wasActive) card.classList.add("active");
-    });
+    var btn = form.querySelector('button[type=submit]');
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+    /* submits natively; FormSubmit redirects to the thank-you page */
   });
-
-  /* ----------------------------------------------------------
-     7. Magnetic buttons
-  ---------------------------------------------------------- */
-  if (!isTouch && !reduceMotion) {
-    document.querySelectorAll(".magnetic").forEach((btn) => {
-      btn.addEventListener("pointermove", (e) => {
-        const rect = btn.getBoundingClientRect();
-        const x = e.clientX - rect.left - rect.width / 2;
-        const y = e.clientY - rect.top - rect.height / 2;
-        btn.style.transform = `translate(${x * 0.2}px, ${y * 0.3}px)`;
-      });
-      btn.addEventListener("pointerleave", () => {
-        btn.style.transform = "translate(0, 0)";
-      });
-    });
-  }
-
-  /* ----------------------------------------------------------
-     8. Missing-image fallback
-  ---------------------------------------------------------- */
-  document.querySelectorAll(".cat-visual img, .story-bg img").forEach((img) => {
-    img.addEventListener("error", () => { img.style.display = "none"; });
+  /* re-enable if the visitor comes back with the browser's back button */
+  window.addEventListener('pageshow', function () {
+    var btn = form.querySelector('button[type=submit]');
+    if (btn) { btn.disabled = false; btn.textContent = 'Send application'; }
   });
-
-  /* ----------------------------------------------------------
-     9. Footer year
-  ---------------------------------------------------------- */
-  const yearEl = document.getElementById("year");
-  if (yearEl) yearEl.textContent = new Date().getFullYear();
 })();
