@@ -284,7 +284,8 @@ p{text-wrap:pretty}
   position:relative;width:100%;height:100%;
   display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
   padding:22px 18px 18px;
-  transition:transform 200ms var(--ease-out);
+  transform-origin:50% 100%;
+  transition:transform 260ms var(--ease-out);
 }
 .scent::before{border-color:var(--rule-c)}
 .scent .fmt{align-self:stretch;margin:0 4px;padding:5px 8px;border-radius:2px;background:var(--band);color:var(--band-ink);font-size:12.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
@@ -304,7 +305,7 @@ p{text-wrap:pretty}
 .scent[aria-pressed="true"] .stamp .pl{display:none}
 .scent:active{transform:scale(.98)}
 @media (hover:hover) and (pointer:fine){
-  .scent:hover{transform:translateY(-4px)}
+  .scent:hover{transform:rotate(-1.6deg) translateY(-2px)}
   .scent:hover .stamp{opacity:1}
 }
 .diamond-dust{position:absolute;inset:0;pointer-events:none;background:
@@ -332,6 +333,27 @@ p{text-wrap:pretty}
   .scent .fmt{margin:0 2px;padding:4px 4px}
   .scent .stamp svg{width:14px;height:14px}
 }
+
+/* ---------- shelf motion ----------
+   .motion is added by script.js only, so labels stay visible if scripts fail. */
+@keyframes setdown{
+  0%{opacity:0;transform:translateY(-22px) rotate(-3.5deg)}
+  55%{opacity:1;transform:translateY(0) rotate(1.4deg)}
+  78%{transform:rotate(-.6deg)}
+  100%{transform:none}
+}
+@keyframes rock{
+  0%{transform:none}
+  25%{transform:rotate(-3deg) translateY(-6px)}
+  55%{transform:rotate(2deg) translateY(-2px)}
+  80%{transform:rotate(-.8deg)}
+  100%{transform:none}
+}
+.motion .labels li .scent{opacity:0}
+.motion .labels li.set .scent{opacity:1;animation:setdown 720ms var(--ease-out) var(--d,0ms) backwards}
+.labels li .scent.rock{animation:rock 560ms var(--ease-out)}
+.mist-puff{position:fixed;left:0;top:0;z-index:60;pointer-events:none;border-radius:50%;filter:blur(8px);will-change:transform,opacity}
+.mist-spark{position:fixed;left:0;top:0;z-index:60;pointer-events:none;width:4px;height:4px;border-radius:50%;background:#fff;box-shadow:0 0 0 1px rgba(255,255,255,.35)}
 
 /* ---------- counter slip (signature) ---------- */
 .slip{
@@ -458,4 +480,6 @@ p{text-wrap:pretty}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:1ms!important;animation-iteration-count:1!important;transition-duration:1ms!important;scroll-behavior:auto!important}
   .js .sign h1 .leaf-layer{animation:none}
+  .motion .labels li .scent{opacity:1;animation:none}
+  .glint-layer{display:none}
 }

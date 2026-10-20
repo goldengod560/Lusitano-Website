@@ -109,7 +109,7 @@
     b.addEventListener('click', function () {
       var x = { name: b.dataset.scent, fmt: b.dataset.fmt };
       if (has(x)) remove(x);
-      else { add(x); setMin(small()); }
+      else { add(x); setMin(small()); if (window.lusitanoPuff) window.lusitanoPuff(b); }
     });
   });
   function small() { return window.matchMedia('(max-width: 600px)').matches; }
@@ -138,6 +138,110 @@
   });
 
   load(); render(); setMin(small());
+})();
+
+/* ---------- motion: shelf settle, mist puff, sign glint ---------- */
+(function () {
+  'use strict';
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var doc = document.documentElement;
+
+  /* mist puff in the scent's own colour, released when a label is picked */
+  window.lusitanoPuff = function (label) {
+    if (reduce.matches || !label.animate) return;
+    var r = label.getBoundingClientRect();
+    var cs = getComputedStyle(label);
+    var color = (cs.getPropertyValue('--band') || '#d9ad55').trim();
+    var sparkle = !!label.querySelector('.diamond-dust');
+    label.classList.remove('rock'); void label.offsetWidth; label.classList.add('rock');
+    var n = sparkle ? 30 : 24;
+    for (var i = 0; i < n; i++) {
+      var el = document.createElement('span');
+      var x = r.left + r.width * (0.18 + Math.random() * 0.64);
+      var y = r.top + r.height * (0.25 + Math.random() * 0.3);
+      var dx = (Math.random() - 0.5) * r.width * 0.9;
+      var dy = -(110 + Math.random() * 190);
+      var dur = 1200 + Math.random() * 900;
+      var frames, opts = { duration: dur, easing: 'cubic-bezier(.23,1,.32,1)', delay: Math.random() * 120 };
+      if (sparkle && i % 2) {
+        el.className = 'mist-spark';
+        frames = [
+          { transform: 'translate(' + x + 'px,' + y + 'px) scale(.4)', opacity: 0 },
+          { transform: 'translate(' + (x + dx * 0.5) + 'px,' + (y + dy * 0.5) + 'px) scale(1.2)', opacity: 1, offset: 0.35 },
+          { transform: 'translate(' + (x + dx) + 'px,' + (y + dy) + 'px) scale(.3)', opacity: 0 }
+        ];
+      } else {
+        var size = 60 + Math.random() * 90;
+        el.className = 'mist-puff';
+        el.style.width = el.style.height = size + 'px';
+        el.style.background = 'radial-gradient(circle, ' + color + ' 0%, transparent 68%)';
+        frames = [
+          { transform: 'translate(' + (x - size / 2) + 'px,' + (y - size / 2) + 'px) scale(.45)', opacity: 0 },
+          { transform: 'translate(' + (x - size / 2 + dx * 0.4) + 'px,' + (y - size / 2 + dy * 0.4) + 'px) scale(1.05)', opacity: 0.9, offset: 0.28 },
+          { transform: 'translate(' + (x - size / 2 + dx) + 'px,' + (y - size / 2 + dy) + 'px) scale(1.8)', opacity: 0 }
+        ];
+      }
+      document.body.appendChild(el);
+      el.animate(frames, opts).onfinish = (function (node) { return function () { node.remove(); }; })(el);
+    }
+  };
+
+  /* labels settle onto the shelf as each row comes into view */
+  var lists = document.querySelectorAll('.labels');
+  if (lists.length && 'IntersectionObserver' in window && !reduce.matches) {
+    doc.classList.add('motion');
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        e.target.classList.add('set');
+        io.unobserve(e.target);
+      });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.2 });
+    var stagger = function (list) {
+      var items = list.querySelectorAll('li');
+      var cols = getComputedStyle(list).gridTemplateColumns.split(' ').length || 1;
+      items.forEach(function (li, i) { li.style.setProperty('--d', (i % cols) * 70 + 'ms'); io.observe(li); });
+    };
+    lists.forEach(stagger);
+    /* a newly opened tab settles in too */
+    document.querySelectorAll('[role="tab"]').forEach(function (t) {
+      t.addEventListener('click', function () {
+        var panel = document.getElementById(t.getAttribute('aria-controls'));
+        if (panel && panel.classList.contains('labels')) {
+          panel.querySelectorAll('li').forEach(function (li) { li.classList.remove('set'); });
+          requestAnimationFrame(function () { stagger(panel); });
+        }
+      });
+    });
+  }
+
+  /* the gilded sign catches a band of light: once after the gilding, then with scroll */
+  var grad = document.getElementById('glint');
+  var sign = document.querySelector('.window');
+  if (grad && sign && !reduce.matches) {
+    var FROM = -700, TO = 1100;
+    var set = function (x) { grad.setAttribute('gradientTransform', 'translate(' + x.toFixed(1) + ' 0)'); };
+    var start = performance.now() + 900, intro = true;
+    var introStep = function (now) {
+      var p = Math.min(1, Math.max(0, (now - start) / 1500));
+      var e = 1 - Math.pow(1 - p, 3);
+      set(FROM + (TO - FROM) * e);
+      if (p < 1) requestAnimationFrame(introStep); else intro = false;
+    };
+    requestAnimationFrame(introStep);
+    var visible = true, ticking = false;
+    new IntersectionObserver(function (es) { visible = es[0].isIntersecting; }).observe(sign);
+    window.addEventListener('scroll', function () {
+      if (intro || !visible || ticking) return;
+      ticking = true;
+      requestAnimationFrame(function () {
+        ticking = false;
+        var h = sign.offsetHeight || 1;
+        var p = Math.min(1, Math.max(0, window.scrollY / (h * 0.75)));
+        set(FROM + (TO - FROM) * p);
+      });
+    }, { passive: true });
+  }
 })();
 
 /* ---------- wholesale form ---------- */

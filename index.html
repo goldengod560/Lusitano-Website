@@ -59,7 +59,7 @@
   <div class="sign">
     <h1 id="sign-title">
       <svg viewBox="0 0 1000 340" role="img" aria-label="Lusitano">
-        <defs><path id="arch" d="M70 330 A560 560 0 0 1 930 330"/></defs>
+        <defs><path id="arch" d="M70 330 A560 560 0 0 1 930 330"/><linearGradient id="glint" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="420" y2="160" gradientTransform="translate(-700 0)"><stop offset="0" stop-color="#fff6dc" stop-opacity="0"/><stop offset=".36" stop-color="#fff6dc" stop-opacity="0"/><stop offset=".5" stop-color="#fff6dc" stop-opacity=".9"/><stop offset=".64" stop-color="#fff6dc" stop-opacity="0"/><stop offset="1" stop-color="#fff6dc" stop-opacity="0"/></linearGradient></defs>
         <g class="shade-layer" fill="#081610" color="#081610" transform="translate(6 7)">
           <text font-family="Bodoni Moda, Didot, serif" font-weight="800" font-size="132" letter-spacing="10" text-anchor="middle"><textPath href="#arch" startOffset="50%">LUSITANO</textPath></text>
           <use href="#horseMark" x="446" y="168" width="108" height="152"/>
@@ -67,6 +67,9 @@
         <g class="leaf-layer" fill="#d9ad55" color="#d9ad55" stroke="#a97b2c" stroke-width="1.2">
           <text font-family="Bodoni Moda, Didot, serif" font-weight="800" font-size="132" letter-spacing="10" text-anchor="middle"><textPath href="#arch" startOffset="50%">LUSITANO</textPath></text>
           <use href="#horseMark" x="446" y="168" width="108" height="152" stroke="none"/>
+        </g>
+        <g class="glint-layer" fill="url(#glint)" color="#fff6dc" aria-hidden="true">
+          <text font-family="Bodoni Moda, Didot, serif" font-weight="800" font-size="132" letter-spacing="10" text-anchor="middle"><textPath href="#arch" startOffset="50%">LUSITANO</textPath></text>
         </g>
       </svg>
     </h1>
