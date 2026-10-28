@@ -219,6 +219,8 @@ p{text-wrap:pretty}
 .section{padding:clamp(72px,11vw,128px) 0}
 .on-oxblood{background:var(--oxblood);color:var(--on-dark)}
 .on-cobalt{background:var(--cobalt);color:var(--on-dark)}
+/* soft fleur-de-lis wallpaper behind the shelf */
+#shelf{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Cdefs%3E%3Cg id='f'%3E%3Cpath d='M50 3C58 14 62 27 60 40C59 48 55 56 50 63C45 56 41 48 40 40C38 27 42 14 50 3Z'/%3E%3Cpath d='M45 63C41 50 34 41 24 39C14 37 7 43 8 51C9 57 15 60 20 58C25 56 25 50 21 48C24 46 29 47 33 51C38 56 41 61 42 66Z'/%3E%3Cpath d='M55 63C59 50 66 41 76 39C86 37 93 43 92 51C91 57 85 60 80 58C75 56 75 50 79 48C76 46 71 47 67 51C62 56 59 61 58 66Z'/%3E%3Crect x='33' y='64' width='34' height='6' rx='2'/%3E%3Cpath d='M45 70C45 79 41 86 34 91C42 92 48 88 50 81C52 88 58 92 66 91C59 86 55 79 55 70Z'/%3E%3C/g%3E%3C/defs%3E%3Cg fill='%23d9ad55' fill-opacity='0.06'%3E%3Cuse href='%23f' transform='translate(18 16) scale(.39)'/%3E%3Cuse href='%23f' transform='translate(93 91) scale(.39)'/%3E%3C/g%3E%3C/svg%3E");background-size:170px 170px;background-position:center top}
 .on-paper{background:var(--paper);color:var(--ink)}
 .on-glass{background:var(--glass);color:var(--on-dark)}
 .section-head{max-width:720px;margin-bottom:clamp(32px,5vw,56px)}
